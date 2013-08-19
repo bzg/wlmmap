@@ -6,13 +6,8 @@
   :dependencies
   [[org.clojure/clojure "1.5.1"]
    [lib-noir "0.6.6"]
-   [com.cemerick/friend "0.1.5"]
    [compojure "1.1.5"]
-   [cheshire "5.2.0"]
-   [com.taoensso/carmine "2.0.0"]
-   [ring-server "0.2.8"]
-   [com.taoensso/tower "2.0.0-beta1"]
-   [com.draines/postal "1.10.4"]]
+   [ring-server "0.2.8"]]
   :ring
   {:handler wlmmap.handler/war-handler,
    :init wlmmap.handler/init,
