@@ -15,7 +15,7 @@
   []
   (str "Destroy"))
 
-(defn- index [req]
+(defn- index [params]
   (h/html5
    (h/include-css "/css/generic.css")
    (h/include-css "/css/MarkerCluster.Default.css")
@@ -23,14 +23,17 @@
    (h/include-css "/css/MarkerCluster.css")
    (h/include-css "http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css")
    (h/include-js "http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js")
-   (h/include-js "/js/mon.js")
+   (if (= (:lang params) "fr")
+     (h/include-js "/js/fr_fr_noimg.js")
+     (h/include-js "/js/mon.js"))
    (h/include-js "/js/leaflet.markercluster.js")
    ;; [:h1 "WLM Map (work in progress)"]
    [:div {:id "map"}]
+   (pr-str params)
    (h/include-js "/js/map.js")))
 
 (defroutes app-routes 
-  (GET "/" req (index req))
+  (GET "/" {params :params} (index params))
   (route/resources "/")
   (route/not-found "Not found"))
 
