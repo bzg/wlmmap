@@ -29,7 +29,6 @@
    (h/include-js "/js/leaflet.markercluster.js")
    ;; [:h1 "WLM Map (work in progress)"]
    [:div {:id "map"}]
-   (pr-str params)
    (h/include-js "/js/map.js")))
 
 (defroutes app-routes 
