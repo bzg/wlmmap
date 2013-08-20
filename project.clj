@@ -7,6 +7,7 @@
   [[org.clojure/clojure "1.5.1"]
    [lib-noir "0.6.6"]
    [compojure "1.1.5"]
+   [org.clojure/data.json "0.2.2"]
    [ring-server "0.2.8"]]
   :ring
   {:handler wlmmap.handler/war-handler,
