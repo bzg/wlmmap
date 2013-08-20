@@ -5,11 +5,21 @@ body {
     color: black;
     font-family: "Inconsolata";
     background-color: #F2F2F2;
-    margin-top: 2em;
+    margin-top: 1em;
+    margin-bottom: 0em;
+}
+
+form.main {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #map {
-    height: 600px;
-    width: 1200px;
-    margin: auto;
+    margin-top: 1em;
+    height: 620px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0em;
 }
