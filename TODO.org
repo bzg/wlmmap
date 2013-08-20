@@ -1,0 +1,6 @@
+* slurp json data from toolserver
+
+http://stackoverflow.com/questions/15660066/how-to-read-json-file-into-clojure-defrecord-to-be-searched-later
+http://toolserver.org/~erfgoed/api/api.php?action=search&srcountry=fr&srlang=fr&limit=3&srwithimage=0&format=json
+
+
