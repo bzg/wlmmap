@@ -1,6 +1,7 @@
 (ns wlmmap.handler
   (:require [clojure.data.json :as json]
             [clojure.string]
+            [taoensso.carmine :as car]
             [ring.util.codec :as r]
             [noir.util.middleware :as middleware]
             [compojure.core :as compojure :refer (GET POST defroutes)]
@@ -11,7 +12,8 @@
 
 (defn init 
   "Called when the application starts."
-  [] (str "init"))
+  []
+  (str "init"))
 
 (defn destroy
   "Called when the application shuts down."
@@ -29,7 +31,12 @@
            "&srwithimage=0&srwithoutimage=1")
          "&srcountry=" (or (:srcountry params) "fr"))))
 
-(defn- build-js [monuments]
+(defn- cleanup-name [n]
+  (-> n
+      (clojure.string/replace #"[\n\r]" "")
+      (clojure.string/replace #"\"" "\\\\\"")))
+
+(defn- build-js [monuments witharticle]
   (let [init
         "<script type='text/javascript'>
 var map = L.map('map').setView([48, 1.2], 2);
@@ -44,17 +51,32 @@ var markers = L.markerClusterGroup();\n"
         fmt-string
         "var a%slegend = \"%s\";
         var a%smarker = L.marker(new L.LatLng(%s, %s), { title: a%slegend });
-        a%smarker.bindPopup(a%slegend);
+        a%smarker.bindPopup(a%slegend,{minWidth:270});
         markers.addLayer(a%smarker);\n"]
     (str init
          (clojure.string/join
           "\n"
-          (for [m monuments]
+          (for [m monuments
+                :let [article (:monument_article m)]
+                :when (if (= witharticle "1") (not (= "" article)) (= "" article))]
             (if (and (:lat m) (:lon m))
               (format fmt-string (:id m)
-                      (str (clojure.string/replace (:name m) #"[\n\r]" "")
+                      (str (if (not (= "" (:monument_article m)))
+                             (str "<a href=\\\"http://" (:lang m) ".wikipedia.org/wiki/"
+                                  (r/url-encode (:monument_article m))
+                                  "\\\">"
+                                  (cleanup-name (:name m))
+                                  "</a>")
+                             (cleanup-name (:name m)))
                            "<br/>"
-                           "<a href=\\\"http://commons.wikimedia.org/wiki/File:" (r/url-encode (:image m)) "\\\">"(:image m)"</a><br/>")
+                           (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
+                                (r/url-encode (:image m))
+                                "&width=250\\\" />"
+                                "<br/>")
+                           "<a href=\\\"http://commons.wikimedia.org/wiki/File:"
+                           (r/url-encode (:image m)) "\\\">"
+                           (:image m)
+                           "</a><br/>")
                       (:id m) (:lat m) (:lon m) (:id m) (:id m) (:id m) (:id m)))))
          end)))
 
@@ -74,6 +96,12 @@ var markers = L.markerClusterGroup();\n"
               {:type "checkbox" :name "srwithimage" :value "1" :checked "checked"}
               {:type "checkbox" :name "srwithimage" :value "1"})]
     "&nbsp;"
+    "With article:" 
+    [:input {:type "hidden" :name "witharticle" :value "0"}]
+    [:input (if (= (:witharticle params) "1")
+              {:type "checkbox" :name "witharticle" :value "1" :checked "checked"}
+              {:type "checkbox" :name "witharticle" :value "1"})]
+    "&nbsp;"
     "Max:" [:input {:type "text-area" :name "limit" :value (:limit params)}]
     "&nbsp;"
     "Wikipedia (2 letters):" [:input {:type "text-area" :name "srcountry" :value (:srcountry params)}]
@@ -83,11 +111,62 @@ var markers = L.markerClusterGroup();\n"
    (build-js (seq
               (:monuments
                (json/read-str (slurp (build-tsreq params))
-                              :key-fn keyword))))))
+                              :key-fn keyword)))
+             (:witharticle params))))
+
+(def server1-conn
+  {:pool {} :spec {:uri (System/getenv "REDISTOGO_URL")}})
+
+(defmacro wcar* [& body]
+  `(car/wcar server1-conn ~@body))
+
+(defn- storemons
+  "interface to select which lang/country to store"
+  []
+  (h/html5
+   [:h1 "Select lang and country to store"]
+   [:form {:method "POST" :action "/storemons0"}
+    "Lang:" [:input {:type "text-area" :name "lang" :value "fr"}]
+    "Country:" [:input {:type "text-area" :name "country" :value "fr"}]
+    [:input {:type "submit" :value "Go"}]]))
+
+(defn- storemons0
+  "store all monuments from a request"
+  [params]
+  (let [cntry (:country params)
+        lang (:lang params)
+        req (str "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000"
+                 "&srcountry=" cntry "&srlang=" lang
+                 (when (not (= (:cont params) ""))
+                   (str "&srcontinue=" (:cont params))))
+        set (str cntry lang)
+        res (json/read-str (slurp req) :key-fn keyword)
+        next (or (:srcontinue (:continue res)) "")]
+    (do (doall (map
+                #(wcar* (do (car/set (:id %) (str %))
+                            (car/sadd set (:id %))
+                            (when (not (= (:monument_article %) ""))
+                              (car/sadd (str set "ar") (:id %)))
+                            (when (not (= (:image %) ""))
+                              (car/sadd (str set "im") (:id %)))))
+                (:monuments res)))
+        (h/html5
+         [:h1 (format "Store monuments for country %s and lang %s into \"%s\""
+                      (:country params) (:lang params) set)]
+         [:form {:method "POST" :action "/storemons0" :class "main"}
+          [:h2 "Current continuation"] (:cont params)
+          [:h2 "Done"] (wcar* (car/scard set))
+          [:h2 "Next"]
+          [:input {:type "hidden" :name "country" :value (:country params)}]
+          [:input {:type "hidden" :name "lang" :value (:lang params)}]
+          [:input {:type "text-area" :name "cont" :value next}]
+          [:input {:type "submit" :value "go"}]]))))
 
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
   (POST "/" {params :params} (index params))
+  (GET "/storemons" [] (storemons))
+  (POST "/storemons0" {params :params} (storemons0 params))
   (route/resources "/")
   (route/not-found "Not found"))
 
