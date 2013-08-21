@@ -3,6 +3,11 @@
             [clojure.string]
             [taoensso.carmine :as car]
             [ring.util.codec :as r]
+            [cemerick.friend :as friend]
+            (cemerick.friend [workflows :as workflows]
+                             [credentials :as creds])
+            [cemerick.friend.credentials :refer (hash-bcrypt)]
+
             [noir.util.middleware :as middleware]
             [compojure.core :as compojure :refer (GET POST defroutes)]
             (compojure [handler :as handler]

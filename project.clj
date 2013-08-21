@@ -8,6 +8,7 @@
    [lib-noir "0.6.6"]
    [compojure "1.1.5"]
    [com.taoensso/carmine "2.0.0"]
+   [com.cemerick/friend "0.1.5"]
    [org.clojure/data.json "0.2.2"]
    [ring-server "0.2.8"]]
   :ring
