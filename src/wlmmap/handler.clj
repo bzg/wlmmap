@@ -1,13 +1,13 @@
 (ns wlmmap.handler
   (:require [clojure.data.json :as json]
-            [clojure.string]
-            [taoensso.carmine :as car]
-            [ring.util.codec :as r]
+            [clojure.string :as str]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
             [cemerick.friend.credentials :refer (hash-bcrypt)]
-
+            [taoensso.carmine :as car]
+            [ring.util.codec :as codec]
+            [ring.util.response :as resp]
             [noir.util.middleware :as middleware]
             [compojure.core :as compojure :refer (GET POST defroutes)]
             (compojure [handler :as handler]
@@ -59,7 +59,7 @@ var markers = L.markerClusterGroup();\n"
         a%smarker.bindPopup(a%slegend,{minWidth:270});
         markers.addLayer(a%smarker);\n"]
     (str init
-         (clojure.string/join
+         (str/join
           "\n"
           (for [m monuments
                 :let [article (:monument_article m)]
@@ -68,18 +68,18 @@ var markers = L.markerClusterGroup();\n"
               (format fmt-string (:id m)
                       (str (if (not (= "" (:monument_article m)))
                              (str "<a href=\\\"http://" (:lang m) ".wikipedia.org/wiki/"
-                                  (r/url-encode (:monument_article m))
+                                  (codec/url-encode (:monument_article m))
                                   "\\\">"
                                   (cleanup-name (:name m))
                                   "</a>")
                              (cleanup-name (:name m)))
                            "<br/>"
                            (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
-                                (r/url-encode (:image m))
+                                (codec/url-encode (:image m))
                                 "&width=250\\\" />"
                                 "<br/>")
                            "<a href=\\\"http://commons.wikimedia.org/wiki/File:"
-                           (r/url-encode (:image m)) "\\\">"
+                           (codec/url-encode (:image m)) "\\\">"
                            (:image m)
                            "</a><br/>")
                       (:id m) (:lat m) (:lon m) (:id m) (:id m) (:id m) (:id m)))))
@@ -125,15 +125,35 @@ var markers = L.markerClusterGroup();\n"
 (defmacro wcar* [& body]
   `(car/wcar server1-conn ~@body))
 
+(def users (atom {"bzg" {:username "bzg"
+                         :password (hash-bcrypt "tintin")
+                         :roles #{::user}}}))
+
+(defn wrap-friend [handler]
+  "Wrap friend authentication around handler."
+  (friend/authenticate
+   handler
+   {:allow-anon? true
+    :workflows [(workflows/interactive-form
+                 :allow-anon? true
+                 :login-uri "/login"
+                 :default-landing-uri "/login"
+                 :credential-fn
+                 #(creds/bcrypt-credential-fn @users %)
+                 )]}))
+
 (defn- storemons
   "interface to select which lang/country to store"
-  []
-  (h/html5
-   [:h1 "Select lang and country to store"]
-   [:form {:method "POST" :action "/storemons0"}
-    "Lang:" [:input {:type "text-area" :name "lang" :value "fr"}]
-    "Country:" [:input {:type "text-area" :name "country" :value "fr"}]
-    [:input {:type "submit" :value "Go"}]]))
+  [req]
+  (if-let [identity (friend/identity req)]
+    (h/html5
+     [:h1 "Select lang and country to store"]
+     [:form {:method "POST" :action "/storemons0"}
+      "Lang:" [:input {:type "text-area" :name "lang" :value "fr"}]
+      "Country:" [:input {:type "text-area" :name "country" :value "fr"}]
+      [:input {:type "submit" :value "Go"}]])
+    (h/html5
+      [:h1 "Not authorized"])))
 
 (defn- storemons0
   "store all monuments from a request"
@@ -167,16 +187,28 @@ var markers = L.markerClusterGroup();\n"
           [:input {:type "text-area" :name "cont" :value next}]
           [:input {:type "submit" :value "go"}]]))))
 
+(def login-form
+  [:div {:class "row"}
+   [:div {:class "columns small-12"}
+    [:h1 "Login (for existing users)"]
+    [:div {:class "row"}
+     [:form {:method "POST" :action "login" :class "columns small-4"}
+      [:div "Username: " [:input {:type "text" :name "username"}]]
+      [:div "Password: " [:input {:type "password" :name "password"}]]
+      [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
+
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
   (POST "/" {params :params} (index params))
-  (GET "/storemons" [] (storemons))
+  (GET "/storemons" req (storemons req))
   (POST "/storemons0" {params :params} (storemons0 params))
+  (GET "/login" req (h/html5 login-form))
+  (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")
   (route/not-found "Not found"))
 
 (def app (middleware/app-handler
-          [app-routes]
+          [(wrap-friend app-routes)]
           :middleware []
           :access-rules []))
 
