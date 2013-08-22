@@ -27,7 +27,7 @@
 
 (defn- cleanup-name [n]
   (-> n
-      (clojure.string/replace #"[[\|]]" "")
+      (clojure.string/replace #"^\[\[|\]\]" "")
       (clojure.string/replace #"[\n\r]" "")
       (clojure.string/replace #"\"" "\\\\\"")))
 
@@ -40,7 +40,7 @@
 (defn- generate-markers
   "return a string with the javascript code to generate addressPoints."
   [params]
-  (let [mons (take 10000 (wcar* (car/smembers "frfr")))
+  (let [mons (take 100 (wcar* (car/smembers "frfr")))
         all (remove #(nil? %)
                     (for [m mons]
                       (let [res (read-string (wcar* (car/get m)))
@@ -55,14 +55,15 @@
                             emb (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
                                      img "&width=250\\\" />")
                             ilk (if (not (= imc ""))
-                                  (str "<a accesskey=\\\"g\\\" href=\\\"http://commons.wikimedia.org/wiki/File:"
-                                       img "\\\">" "Wikimedia image" "</a>") "")
+                                  (str "<a href=\\\"http://commons.wikimedia.org/wiki/File:"
+                                       img "\\\">" emb "</a>") "")
                             art (:monument_article res)
-                            arl (str "<a href=\\\"http://" lng ".wikipedia.org/wiki/" art "</a>")
-                            src (format "<a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
+                            arl (format "<a href=\\\"http://%s.wikipedia.org/wiki/%s\\\">%s</a>" lng art art)
+                            src (format "Source: <a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
                         (when (and lat lon nam)
-                          (format "[%s,%s,\"%s\"]" lat lon (str "<h3>" nam "</h3>" emb "<br/>" ilk
-                                                                "<br/>" src "<br/>" (if art arl "")))))))]
+                          (format "[%s,%s,\"%s\"]" lat lon (str "<h3>" nam "</h3>"
+                                                                ilk "<br/>" (if art (str arl "<br/>") "")
+                                                                src "<br/>"))))))]
     (str "var addressPoints = [" (str/join "," all) "];")))
 
 (defn- index [params]
