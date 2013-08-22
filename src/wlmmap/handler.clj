@@ -40,7 +40,7 @@
 (defn- generate-markers
   "return a string with the javascript code to generate addressPoints."
   [params]
-  (let [mons (take 2000 (wcar* (car/smembers "frfrim")))
+  (let [mons (take 50000 (wcar* (car/smembers "frfrim")))
         all (remove #(nil? %)
                     (for [m mons]
                       (let [res (read-string (wcar* (car/get m)))
@@ -61,9 +61,10 @@
                             arl (format "<a href=\\\"http://%s.wikipedia.org/wiki/%s\\\">%s</a>" lng art art)
                             src (format "Source: <a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
                         (when (and lat lon nam)
-                          (format "[%s,%s,\"%s\"]" lat lon (str "<h3>" nam "</h3>"
-                                                                ilk "<br/>" (if art (str arl "<br/>") "")
-                                                                src "<br/>"))))))]
+                          (format "[%s,%s,\"%s\"]" lat lon nam
+                                  (str "<h3>" nam "</h3>"
+                                       ilk "<br/>" (if art (str arl "<br/>") "")
+                                       src "<br/>"))))))]
     (str "var addressPoints = [" (str/join "," all) "];")))
 
 (defn- index [params]
@@ -115,11 +116,12 @@
     for (var i = 0; i < addressPoints.length; i++) {
         var a = addressPoints[i];
         var title = a[2];
+        var popup = a[3];
         var marker = L.marker(new L.LatLng(a[0], a[1]), {
             icon: L.mapbox.marker.icon({'marker-symbol': 'post', 'marker-color': '0044FF'}),
             title: title
         });
-        marker.bindPopup(title,{minWidth:270});
+        marker.bindPopup(popup,{minWidth:270});
         markers.addLayer(marker);
     }
 
