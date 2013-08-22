@@ -40,7 +40,7 @@
 (defn- generate-markers
   "return a string with the javascript code to generate addressPoints."
   [params]
-  (let [mons (take 10000 (wcar* (car/smembers "frfrim")))
+  (let [mons (take 50000 (wcar* (car/smembers "frfrim")))
         all (remove #(nil? %)
                     (for [m mons]
                       (let [res (read-string (wcar* (car/get m)))
@@ -61,7 +61,7 @@
                             arl (format "<a href=\\\"http://%s.wikipedia.org/wiki/%s\\\">%s</a>" lng art art)
                             src (format "Source: <a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
                         (when (and lat lon nam)
-                          (format "[%s,%s,\"%s\"]" lat lon nam
+                          (format "[%s,%s,\"%s\",\"%s\"]" lat lon nam
                                   (str "<h3>" nam "</h3>"
                                        ilk "<br/>" (if art (str arl "<br/>") "")
                                        src "<br/>"))))))]
