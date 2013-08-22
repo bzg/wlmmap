@@ -393,9 +393,14 @@
 	position: absolute;
 	text-align: center;
 	}
+
+.leaflet-popup img {
+    box-shadow: 2px 2px 2px gray;
+    margin: .3em;
+}
 .leaflet-popup-content-wrapper {
 	padding: 1px;
-	text-align: left;
+	text-align: center;
 	-webkit-border-radius: 12px;
 	        border-radius: 12px;
 	}
