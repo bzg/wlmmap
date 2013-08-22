@@ -40,7 +40,7 @@
 (defn- generate-markers
   "return a string with the javascript code to generate addressPoints."
   [params]
-  (let [mons (take 100 (wcar* (car/smembers "frfr")))
+  (let [mons (take 1000 (wcar* (car/smembers "frfr")))
         all (remove #(nil? %)
                     (for [m mons]
                       (let [res (read-string (wcar* (car/get m)))
