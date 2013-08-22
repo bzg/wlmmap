@@ -129,31 +129,118 @@ var markers = L.markerClusterGroup();\n"
                          :password (hash-bcrypt "tintin")
                          :roles #{::user}}}))
 
-(defn wrap-friend [handler]
-  "Wrap friend authentication around handler."
-  (friend/authenticate
-   handler
-   {:allow-anon? true
-    :workflows [(workflows/interactive-form
-                 :allow-anon? true
-                 :login-uri "/login"
-                 :default-landing-uri "/login"
-                 :credential-fn
-                 #(creds/bcrypt-credential-fn @users %)
-                 )]}))
+(def lang-pairs
+{
+73, ["ad" 	"ca"]
+0, ["aq" 	"en"]
+1, ["ar" 	"es"]
+2, ["at" 	"de"]
+3, ["be-bru" 	"nl"]
+4, ["be-vlg" 	"en"]
+5, ["be-vlg" 	"fr"]
+6, ["be-vlg" 	"nl"]
+7, ["be-wal" 	"en"]
+8, ["be-wal" 	"fr"]
+9, ["be-wal" 	"nl"]
+10, ["bo" 	"es"]
+11, ["by" 	"be-x-old"]
+12, ["ca" 	"en"]
+13, ["ca" 	"fr"]
+14, ["ch" 	"fr"]
+15, ["ch-old" 	"de"]
+16, ["ch-old" 	"en"]
+17, ["ch-old" 	"it"]
+18, ["cl" 	"es"]
+19, ["co" 	"es"]
+20, ["cz" 	"cs"]
+21, ["de-by" 	"de"]
+22, ["de-he" 	"de"]
+23, ["de-nrw" 	"de"]
+24, ["de-nrw-bm" 	"de"]
+25, ["de-nrw-k" 	"de"]
+26, ["dk-bygning" 	"da"]
+27, ["dk-fortids" 	"da"]
+28, ["ee" 	"et"]
+29, ["es" 	"ca"]
+30, ["es" 	"es"]
+31, ["es" 	"gl"]
+32, ["fr" 	"ca"]
+33, ["fr" 	"fr"]
+34, ["gb-eng" 	"en"]
+35, ["gb-nir" 	"en"]
+36, ["gb-sct" 	"en"]
+37, ["gb-wls" 	"en"]
+38, ["gh" 	"en"]
+39, ["ie" 	"en"]
+40, ["il" 	"he"]
+41, ["in" 	"en"]
+42, ["it" 	"it"]
+43, ["it-88" 	"ca"]
+44, ["it-bz" 	"de"]
+45, ["ke" 	"en"]
+46, ["lu" 	"lb"]
+47, ["mt" 	"de"]
+48, ["mx" 	"es"]
+49, ["nl" 	"nl"]
+50, ["nl-gem" 	"nl"]
+51, ["no" 	"no"]
+52, ["pa" 	"es"]
+53, ["ph" 	"en"]
+54, ["pk" 	"en"]
+55, ["pl" 	"pl"]
+56, ["pt" 	"pt"]
+57, ["ro" 	"ro"]
+58, ["rs" 	"sr"]
+59, ["ru" 	"ru"]
+60, ["se-bbr" 	"sv"]
+61, ["se-fornmin" 	"sv"]
+62, ["se-ship" 	"sv"]
+63, ["sk" 	"de"]
+64, ["sk" 	"sk"]
+65, ["th" 	"th"]
+66, ["tn" 	"fr"]
+67, ["ua" 	"uk"]
+68, ["us" 	"en"]
+69, ["us-ca" 	"en"]
+70, ["uy" 	"es"]
+71, ["ve" 	"es"]
+72, ["za" 	"en"]
+})
 
 (defn- storemons
   "interface to select which lang/country to store"
   [req]
-  (if-let [identity (friend/identity req)]
-    (h/html5
-     [:h1 "Select lang and country to store"]
-     [:form {:method "POST" :action "/storemons0"}
-      "Lang:" [:input {:type "text-area" :name "lang" :value "fr"}]
-      "Country:" [:input {:type "text-area" :name "country" :value "fr"}]
-      [:input {:type "submit" :value "Go"}]])
-    (h/html5
-      [:h1 "Not authorized"])))
+  (h/html5
+   [:h1 "Select lang and country to store"]
+   [:table
+    [:tr
+     [:td {:style "width: 100px;"} "#"]
+     [:td {:style "width: 100px;"} "Lang"]
+     [:td {:style "width: 100px;"} "Country"]
+     [:td {:style "width: 200px;"} "Last updated"]
+     [:td {:style "width: 300px;"} "Continue from"]
+     ]]
+   (doall (map
+           #(let [fval (first (val %))
+                  lval (last (val %))
+                  hset (str "h" fval lval)
+                  cont (wcar* (car/hget hset "continue"))
+                  updt (wcar* (car/hget hset "updated"))]
+              (h/html5
+               [:form {:method "POST" :action "/storemons0"}
+                [:table
+                 [:tr 
+                  [:td {:style "width: 100px;"}
+                   (wcar* (car/hget (str "h" fval lval) "size"))]
+                  [:td {:style "width: 100px;"}
+                   lval [:input {:type "hidden" :name "lang" :value lval}]]
+                  [:td {:style "width: 100px;"}
+                   fval [:input {:type "hidden" :name "country" :value fval}]]
+                  [:td {:style "width: 200px;"} updt]
+                  [:td {:style "width: 300px;"}
+                   cont [:input {:type "hidden" :name "cont" :value cont}]]
+                  [:td [:input {:type "submit" :value "Go"}]]]]]))
+           lang-pairs))))
 
 (defn- storemons0
   "store all monuments from a request"
@@ -175,17 +262,34 @@ var markers = L.markerClusterGroup();\n"
                             (when (not (= (:image %) ""))
                               (car/sadd (str set "im") (:id %)))))
                 (:monuments res)))
-        (h/html5
-         [:h1 (format "Store monuments for country %s and lang %s into \"%s\""
-                      (:country params) (:lang params) set)]
-         [:form {:method "POST" :action "/storemons0" :class "main"}
-          [:h2 "Current continuation"] (:cont params)
-          [:h2 "Done"] (wcar* (car/scard set))
-          [:h2 "Next"]
-          [:input {:type "hidden" :name "country" :value (:country params)}]
-          [:input {:type "hidden" :name "lang" :value (:lang params)}]
-          [:input {:type "text-area" :name "cont" :value next}]
-          [:input {:type "submit" :value "go"}]]))))
+        (let [card (wcar* (car/scard set))]
+          (wcar* (car/hmset (str "h" set) "size" card
+                            "updated" (java.util.Date.)
+                            "continue" next))
+          (h/html5
+           [:h1 (format "Store monuments for country %s and lang %s into \"%s\""
+                        (:country params) (:lang params) set)]
+           [:form {:method "POST" :action "/storemons0" :class "main"}
+            [:h2 "Current continuation"] (:cont params)
+            [:h2 "Done"] card
+            [:h2 "Next"]
+            [:input {:type "hidden" :name "country" :value (:country params)}]
+            [:input {:type "hidden" :name "lang" :value (:lang params)}]
+            [:input {:type "text-area" :name "cont" :value next}]
+            [:input {:type "submit" :value "go"}]])))))
+
+(defn wrap-friend [handler]
+  "Wrap friend authentication around handler."
+  (friend/authenticate
+   handler
+   {:allow-anon? true
+    :workflows [(workflows/interactive-form
+                 :allow-anon? true
+                 :login-uri "/login"
+                 :default-landing-uri "/login"
+                 :credential-fn
+                 #(creds/bcrypt-credential-fn @users %)
+                 )]}))
 
 (def login-form
   [:div {:class "row"}
@@ -200,7 +304,7 @@ var markers = L.markerClusterGroup();\n"
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
   (POST "/" {params :params} (index params))
-  (GET "/storemons" req (storemons req))
+  (GET "/storemons" req (if-let [identity (friend/identity req)] (storemons req) "Doh!"))
   (POST "/storemons0" {params :params} (storemons0 params))
   (GET "/login" req (h/html5 login-form))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
