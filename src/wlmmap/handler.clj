@@ -32,7 +32,7 @@
       (clojure.string/replace #"\"" "\\\\\"")))
 
 (def server1-conn
-  {:pool {} :spec {:uri (System/getenv "REDISTOGO_URL")}})
+  {:pool {} :spec {:uri (System/getenv "OPENREDIS_URL")}})
 
 (defmacro wcar* [& body]
   `(car/wcar server1-conn ~@body))
@@ -40,7 +40,7 @@
 (defn- generate-markers
   "return a string with the javascript code to generate addressPoints."
   [params]
-  (let [mons (take 1000 (wcar* (car/smembers "frfr")))
+  (let [mons (take 2000 (wcar* (car/smembers "frfr")))
         all (remove #(nil? %)
                     (for [m mons]
                       (let [res (read-string (wcar* (car/get m)))
