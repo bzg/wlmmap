@@ -1,12 +1,11 @@
 @import url(http://fonts.googleapis.com/css?family=Inconsolata);
-@import url(http://fonts.googleapis.com/css?family=Brawler);
+/* @import url(http://fonts.googleapis.com/css?family=Brawler); */
 
 body {
     color: black;
     font-family: "Inconsolata";
-    background-color: #F2F2F2;
-    margin-top: 1em;
-    margin-bottom: 0em;
+    margin: 0;
+    padding: 0;
 }
 
 form.main {
@@ -16,10 +15,35 @@ form.main {
 }
 
 #map {
-    margin-top: 1em;
-    height: 620px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 0em;
+    position: absolute;
+    top:0;
+    bottom:0;
+    width:100%;
 }
+
+.corner {
+    position:fixed;
+    top:10px;
+    right:10px;
+    opacity:.4;
+    border-radius:15px;
+    padding:1em;
+    background: black;
+    color: white;
+    z-index: 1000;
+}
+
+.corner:hover {
+    opacity:.8;
+    width:20%;
+    height:20%;
+}
+
+.corner span {
+    display:none;
+    }
+.corner:hover span {
+    display:block;
+}
+
+

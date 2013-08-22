@@ -25,105 +25,125 @@
   []
   (str "Destroy"))
 
-(defn- build-tsreq [params]
-  (if (empty? params)
-    (str "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&srlang=fr&srcountry=fr&limit=1000")
-    (str "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&"
-         "limit=" (or (:limit params) 1000)
-         (if (:srlang params) (str "&srlang=" (:srlang params)))
-         (if (= (:srwithimage params) "1")
-           "&srwithimage=1&srwithoutimage=0"
-           "&srwithimage=0&srwithoutimage=1")
-         "&srcountry=" (or (:srcountry params) "fr"))))
-
 (defn- cleanup-name [n]
   (-> n
+      (clojure.string/replace #"[[\|]]" "")
       (clojure.string/replace #"[\n\r]" "")
       (clojure.string/replace #"\"" "\\\\\"")))
-
-(defn- build-js [monuments witharticle]
-  (let [init
-        "<script type='text/javascript'>
-var map = L.map('map').setView([48, 1.2], 2);
-L.tileLayer('http://{s}.tile.cloudmade.com/3068c9a9c9b648cb910837cf3c5fce10/997/256/{z}/{x}/{y}.png', {
-    attribution: 'Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://cloudmade.com\">CloudMade</a>',
-    maxZoom: 18
-}).addTo(map);
-var markers = L.markerClusterGroup();\n"
-        end
-        "map.addLayer(markers);
-</script>"
-        fmt-string
-        "var a%slegend = \"%s\";
-        var a%smarker = L.marker(new L.LatLng(%s, %s), { title: a%slegend });
-        a%smarker.bindPopup(a%slegend,{minWidth:270});
-        markers.addLayer(a%smarker);\n"]
-    (str init
-         (str/join
-          "\n"
-          (for [m monuments
-                :let [article (:monument_article m)]
-                :when (if (= witharticle "1") (not (= "" article)) (= "" article))]
-            (if (and (:lat m) (:lon m))
-              (format fmt-string (:id m)
-                      (str (if (not (= "" (:monument_article m)))
-                             (str "<a href=\\\"http://" (:lang m) ".wikipedia.org/wiki/"
-                                  (codec/url-encode (:monument_article m))
-                                  "\\\">"
-                                  (cleanup-name (:name m))
-                                  "</a>")
-                             (cleanup-name (:name m)))
-                           "<br/>"
-                           (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
-                                (codec/url-encode (:image m))
-                                "&width=250\\\" />"
-                                "<br/>")
-                           "<a href=\\\"http://commons.wikimedia.org/wiki/File:"
-                           (codec/url-encode (:image m)) "\\\">"
-                           (:image m)
-                           "</a><br/>")
-                      (:id m) (:lat m) (:lon m) (:id m) (:id m) (:id m) (:id m)))))
-         end)))
-
-(defn- index [params]
-  (h/html5
-   (h/include-css "/css/generic.css"
-                  "/css/MarkerCluster.Default.css"
-                  "/css/MarkerCluster.Default.ie.css"
-                  "/css/MarkerCluster.css"
-                  "http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css")
-   (h/include-js "http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"
-                 "/js/leaflet.markercluster.js")
-   [:form {:method "POST" :action "/" :class "main"}
-    "With images:" 
-    [:input {:type "hidden" :name "srwithimage" :value "0"}]
-    [:input (if (= (:srwithimage params) "1")
-              {:type "checkbox" :name "srwithimage" :value "1" :checked "checked"}
-              {:type "checkbox" :name "srwithimage" :value "1"})]
-    "&nbsp;"
-    "With article:" 
-    [:input {:type "hidden" :name "witharticle" :value "0"}]
-    [:input (if (= (:witharticle params) "1")
-              {:type "checkbox" :name "witharticle" :value "1" :checked "checked"}
-              {:type "checkbox" :name "witharticle" :value "1"})]
-    "&nbsp;"
-    "Max:" [:input {:type "text-area" :name "limit" :value (:limit params)}]
-    "&nbsp;"
-    "Wikipedia (2 letters):" [:input {:type "text-area" :name "srcountry" :value (:srcountry params)}]
-    [:input {:type "submit" :value "Go"}]]
-
-   [:div {:id "map"}]
-   (build-js (seq
-              (:monuments
-               (json/read-str (slurp (build-tsreq params))
-                              :key-fn keyword)))
-             (:witharticle params))))
 
 (def server1-conn
   {:pool {} :spec {:uri (System/getenv "REDISTOGO_URL")}})
 
 (defmacro wcar* [& body]
   `(car/wcar server1-conn ~@body))
+
+(defn- generate-markers
+  "return a string with the javascript code to generate addressPoints."
+  [params]
+  (let [mons (take 10000 (wcar* (car/smembers "frfr")))
+        all (remove #(nil? %)
+                    (for [m mons]
+                      (let [res (read-string (wcar* (car/get m)))
+                            lat (:lat res)
+                            lon (:lon res)
+                            reg (:registrant_url res)
+                            id (:id res)
+                            nam (cleanup-name (:name res))
+                            imc (:image res)
+                            img (codec/url-encode imc)
+                            lng (:lang res)
+                            emb (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
+                                     img "&width=250\\\" />")
+                            ilk (if (not (= imc ""))
+                                  (str "<a accesskey=\\\"g\\\" href=\\\"http://commons.wikimedia.org/wiki/File:"
+                                       img "\\\">" "Wikimedia image" "</a>") "")
+                            art (:monument_article res)
+                            arl (str "<a href=\\\"http://" lng ".wikipedia.org/wiki/" art "</a>")
+                            src (format "<a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
+                        (when (and lat lon nam)
+                          (format "[%s,%s,\"%s\"]" lat lon (str "<h3>" nam "</h3>" emb "<br/>" ilk
+                                                                "<br/>" src "<br/>" (if art arl "")))))))]
+    (str "var addressPoints = [" (str/join "," all) "];")))
+
+(defn- index [params]
+  (h/html5
+   [:head
+    (h/include-css "/css/generic.css" "/css/mapbox.css")
+    "<!--[if lt IE 8]>"
+    (h/include-css "/css/mapbox.ie.css")
+    "<![endif]-->"
+    (h/include-js "/js/mapbox.js")]
+   
+   [:body
+    (h/include-css "/css/generic.css" "/css/Control.MiniMap.css")
+    (h/include-css "/css/MarkerCluster.Default.css")
+    "<!--[if lt IE 8]>"
+    (h/include-css "/css/MarkerCluster.Default.ie.css")
+    "<![endif]-->"
+    (h/include-js "/js/leaflet.markercluster.js")
+    (h/include-js "/js/Control.MiniMap.js")    
+
+    "<script type='text/javascript'>"
+    
+    (generate-markers params)
+    
+    "</script>\n"
+    
+    "
+<!-- <div class='corner'> -->
+<!-- <span>...</span> -->
+<!-- </div> -->
+
+<div id='map'></div>
+
+<script type='text/javascript'>
+    var map = L.mapbox.map('map', 'examples.map-uci7ul8p')
+        .setView([48, 1.2], 3)
+        .on('ready', function() {
+        new L.Control.MiniMap(L.mapbox.tileLayer('examples.map-uci7ul8p'))
+          .addTo(map);
+      });
+
+    // centering
+    map.markerLayer.on('click', function(e) {
+        map.panTo(e.layer.getLatLng());
+    });
+
+    var markers = new L.MarkerClusterGroup();
+
+    for (var i = 0; i < addressPoints.length; i++) {
+        var a = addressPoints[i];
+        var title = a[2];
+        var marker = L.marker(new L.LatLng(a[0], a[1]), {
+            icon: L.mapbox.marker.icon({'marker-symbol': 'post', 'marker-color': '0044FF'}),
+            title: title
+        });
+        marker.bindPopup(title,{minWidth:270});
+        markers.addLayer(marker);
+    }
+
+    map.addLayer(markers);
+</script>
+"
+    ]))
+
+   ;; [:form {:method "POST" :action "/" :class "main"}
+   ;;  "With images:" 
+   ;;  [:input {:type "hidden" :name "srwithimage" :value "0"}]
+   ;;  [:input (if (= (:srwithimage params) "1")
+   ;;            {:type "checkbox" :name "srwithimage" :value "1" :checked "checked"}
+   ;;            {:type "checkbox" :name "srwithimage" :value "1"})]
+   ;;  "&nbsp;"
+   ;;  "With article:" 
+   ;;  [:input {:type "hidden" :name "witharticle" :value "0"}]
+   ;;  [:input (if (= (:witharticle params) "1")
+   ;;            {:type "checkbox" :name "witharticle" :value "1" :checked "checked"}
+   ;;            {:type "checkbox" :name "witharticle" :value "1"})]
+   ;;  "&nbsp;"
+   ;;  "Max:" [:input {:type "text-area" :name "limit" :value (:limit params)}]
+   ;;  "&nbsp;"
+   ;;  "Wikipedia (2 letters):" [:input {:type "text-area" :name "srcountry" :value (:srcountry params)}]
+   ;;  [:input {:type "submit" :value "Go"}]]
 
 (def users (atom {"bzg" {:username "bzg"
                          :password (hash-bcrypt "tintin")
