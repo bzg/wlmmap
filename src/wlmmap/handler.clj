@@ -41,30 +41,29 @@
   "return a string with the javascript code to generate addressPoints."
   [params]
   (let [mons (take 5000 (wcar* (car/smembers "frfrim")))
-        all (remove #(nil? %)
-                    (for [m mons]
-                      (let [res (read-string (wcar* (car/get m)))
-                            lat (:lat res)
-                            lon (:lon res)
-                            reg (:registrant_url res)
-                            id (:id res)
-                            nam (cleanup-name (:name res))
-                            imc (:image res)
-                            img (codec/url-encode imc)
-                            lng (:lang res)
-                            emb (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
-                                     img "&width=250\\\" />")
-                            ilk (if (not (= imc ""))
-                                  (str "<a href=\\\"http://commons.wikimedia.org/wiki/File:"
-                                       img "\\\">" emb "</a>") "")
-                            art (:monument_article res)
-                            arl (format "<a href=\\\"http://%s.wikipedia.org/wiki/%s\\\">%s</a>" lng art art)
-                            src (format "Source: <a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
-                        (when (and lat lon nam)
-                          (format "[%s,%s,\"%s\",\"%s\"]" lat lon nam
-                                  (str "<h3>" nam "</h3>"
-                                       ilk "<br/>" (if art (str arl "<br/>") "")
-                                       src "<br/>"))))))]
+        all (for [m (filter #(:lat %) mons)]
+              (let [res (read-string (wcar* (car/get m)))
+                    lat (:lat res)
+                    lon (:lon res)
+                    reg (:registrant_url res)
+                    id (:id res)
+                    nam (cleanup-name (:name res))
+                    imc (:image res)
+                    img (codec/url-encode imc)
+                    lng (:lang res)
+                    emb (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
+                             img "&width=250\\\" />")
+                    ilk (if (not (= imc ""))
+                          (str "<a href=\\\"http://commons.wikimedia.org/wiki/File:"
+                               img "\\\">" emb "</a>") "")
+                    art (:monument_article res)
+                    arl (format "<a href=\\\"http://%s.wikipedia.org/wiki/%s\\\">%s</a>" lng art art)
+                    src (format "Source: <a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
+                (when (and lat lon nam)
+                  (format "[%s,%s,\"%s\",\"%s\"]" lat lon nam
+                          (str "<h3>" nam "</h3>"
+                               ilk "<br/>" (if art (str arl "<br/>") "")
+                               src "<br/>")))))]
     (str "var addressPoints = [" (str/join "," all) "];")))
 
 (defn- index [params]
