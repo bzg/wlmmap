@@ -13,7 +13,8 @@
             (compojure [handler :as handler]
                        [route :as route])
             [hiccup.page :as h]
-            [hiccup.element :as e]))
+            [hiccup.element :as e]
+            [shoreleave.middleware.rpc :refer [defremote wrap-rpc]]))
 
 (defn init 
   "Called when the application starts."
@@ -66,6 +67,11 @@
                                        ilk "<br/>" (if art (str arl "<br/>") "")
                                        src "<br/>"))))))]
     (str "var addressPoints = [" (str/join "," all) "];")))
+
+(defn- testjs []
+  (h/html5
+   (h/include-js "/js/main.js")
+   "blabla"))
 
 (defn- index [params]
   (h/html5
@@ -324,18 +330,22 @@
       [:div "Password: " [:input {:type "password" :name "password"}]]
       [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
 
+(defremote testremote []
+  "This is remotely defined")
+
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
   (POST "/" {params :params} (index params))
   (GET "/storemons" req (if-let [identity (friend/identity req)] (storemons req) "Doh!"))
   (POST "/storemons0" {params :params} (storemons0 params))
   (GET "/login" req (h/html5 login-form))
+  (GET "/testjs" [] (testjs))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")
   (route/not-found "Not found"))
 
 (def app (middleware/app-handler
-          [(wrap-friend app-routes)]
+          [(wrap-rpc (wrap-friend app-routes))]
           :middleware []
           :access-rules []))
 
