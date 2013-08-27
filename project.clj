@@ -1,5 +1,5 @@
 (defproject
-  wlmmap "0.0.1"
+  wlmmap "0.0.2"
   :url "http://github.com/bzg/wlmmap"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -32,13 +32,11 @@
   :plugins
   [[lein-cljsbuild "0.3.2"]
    [lein-ring "0.8.5"]]
-
   :cljsbuild {:builds
               [{:source-paths ["src/cljs"]
                 :compiler
                 {:output-to "resources/public/js/main.js"
                  :optimizations :simple
                  :pretty-print false}}]}
-
   :description "Wlmmap: Wiki Loves Monuments Map"
   :min-lein-version "2.0.0")
