@@ -32,7 +32,7 @@
   :plugins
   [[lein-cljsbuild "0.3.2"]
    [lein-ring "0.8.5"]]
-gg
+
   :cljsbuild {:builds
               [{:source-paths ["src/cljs"]
                 :compiler
