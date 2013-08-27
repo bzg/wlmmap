@@ -3,6 +3,8 @@
   :url "http://github.com/bzg/wlmmap"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :repositories {"sonatype-oss-public"
+                 "https://oss.sonatype.org/content/groups/public/"}
   :dependencies
   [[org.clojure/clojure "1.5.1"]
    [lib-noir "0.6.8"]
@@ -16,8 +18,6 @@
    [shoreleave/shoreleave-remote-ring "0.3.0"]
    [shoreleave/shoreleave-remote "0.3.0"]
    [core.async "0.1.0-SNAPSHOT"]]
-  :repositories {"sonatype-staging"
-                 "https://oss.sonatype.org/content/groups/staging/"}
   :ring
   {:handler wlmmap.handler/war-handler,
    :init wlmmap.handler/init,
