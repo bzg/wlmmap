@@ -333,6 +333,19 @@
 (defremote testremote []
   "This is remotely defined")
 
+(defn- testblade []
+  (h/html5
+   [:head
+    (h/include-css "http://cdn.leafletjs.com/leaflet-0.5/leaflet.css")
+    "<!--[if lt IE 8]>"
+    (h/include-css "http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css")
+    "<![endif]-->"]
+   [:body
+    "<div id=\"mappy\" style=\"width: 960px; height: 500px\"></div>"
+    (h/include-js "/js/ArrayLikeIsArray.js"
+                  "http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"
+                  "/js/main.js")]))
+
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
   (POST "/" {params :params} (index params))
@@ -340,6 +353,7 @@
   (POST "/storemons0" {params :params} (storemons0 params))
   (GET "/login" req (h/html5 login-form))
   (GET "/testjs" [] (testjs))
+  (GET "/testblade" [] (testblade))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")
   (route/not-found "Not found"))

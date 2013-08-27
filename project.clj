@@ -7,6 +7,7 @@
   [[org.clojure/clojure "1.5.1"]
    [lib-noir "0.6.8"]
    [com.cemerick/friend "0.1.5"]
+   [net.drib/blade "0.1.0"]
    [compojure "1.1.5"]
    [com.taoensso/carmine "2.2.0"]
    [org.clojure/data.json "0.2.2"]
