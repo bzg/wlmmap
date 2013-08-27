@@ -11,9 +11,13 @@
    [compojure "1.1.5"]
    [com.taoensso/carmine "2.2.0"]
    [org.clojure/data.json "0.2.2"]
+   [org.clojure/clojurescript "0.0-1859"]
    [ring-server "0.2.8"]
    [shoreleave/shoreleave-remote-ring "0.3.0"]
-   [shoreleave/shoreleave-remote "0.3.0"]]
+   [shoreleave/shoreleave-remote "0.3.0"]
+   [core.async "0.1.0-SNAPSHOT"]]
+  :repositories {"sonatype-staging"
+                 "https://oss.sonatype.org/content/groups/staging/"}
   :ring
   {:handler wlmmap.handler/war-handler,
    :init wlmmap.handler/init,
@@ -28,13 +32,13 @@
   :plugins
   [[lein-cljsbuild "0.3.2"]
    [lein-ring "0.8.5"]]
-
+gg
   :cljsbuild {:builds
               [{:source-paths ["src/cljs"]
                 :compiler
                 {:output-to "resources/public/js/main.js"
                  :optimizations :simple
-                 :pretty-print true}}]}
+                 :pretty-print false}}]}
 
   :description "Wlmmap: Wiki Loves Monuments Map"
   :min-lein-version "2.0.0")
