@@ -1,4 +1,10 @@
-* slurp json data from toolserver
+* NEXT use blade as leaflet wrapper
+* NEXT use core.async to generate markers
+* NEXT use shoreleave to remote-get redis entries
+* DONE use mapbox.js instead of cloudmap
+* DONE Admin interface to feed redis server
+* DONE Admin login with in-memory login creds
+* DONE slurp json data from toolserver
 
 http://stackoverflow.com/questions/15660066/how-to-read-json-file-into-clojure-defrecord-to-be-searched-later
 http://toolserver.org/~erfgoed/api/api.php?action=search&srcountry=fr&srlang=fr&limit=3&srwithimage=0&format=json
