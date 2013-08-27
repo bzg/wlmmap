@@ -68,11 +68,6 @@
                                        src "<br/>"))))))]
     (str "var addressPoints = [" (str/join "," all) "];")))
 
-(defn- testjs []
-  (h/html5
-   (h/include-js "/js/main.js")
-   "blabla"))
-
 (defn- index [params]
   (h/html5
    [:head
@@ -135,24 +130,6 @@
 </script>
 "
     ]))
-
-   ;; [:form {:method "POST" :action "/" :class "main"}
-   ;;  "With images:" 
-   ;;  [:input {:type "hidden" :name "srwithimage" :value "0"}]
-   ;;  [:input (if (= (:srwithimage params) "1")
-   ;;            {:type "checkbox" :name "srwithimage" :value "1" :checked "checked"}
-   ;;            {:type "checkbox" :name "srwithimage" :value "1"})]
-   ;;  "&nbsp;"
-   ;;  "With article:" 
-   ;;  [:input {:type "hidden" :name "witharticle" :value "0"}]
-   ;;  [:input (if (= (:witharticle params) "1")
-   ;;            {:type "checkbox" :name "witharticle" :value "1" :checked "checked"}
-   ;;            {:type "checkbox" :name "witharticle" :value "1"})]
-   ;;  "&nbsp;"
-   ;;  "Max:" [:input {:type "text-area" :name "limit" :value (:limit params)}]
-   ;;  "&nbsp;"
-   ;;  "Wikipedia (2 letters):" [:input {:type "text-area" :name "srcountry" :value (:srcountry params)}]
-   ;;  [:input {:type "submit" :value "Go"}]]
 
 (def admin
   (atom {"bzg" {:username "bzg"
@@ -331,8 +308,8 @@
       [:div "Password: " [:input {:type "password" :name "password"}]]
       [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
 
-(defremote testremote []
-  "This is remotely defined")
+;; (defremote testremote []
+;;   "This is remotely defined")
 
 (defn- testblade []
   (h/html5
@@ -353,7 +330,6 @@
   (GET "/storemons" req (if-let [identity (friend/identity req)] (storemons req) "Doh!"))
   (POST "/storemons0" {params :params} (storemons0 params))
   (GET "/login" req (h/html5 login-form))
-  (GET "/testjs" [] (testjs))
   (GET "/testblade" [] (testblade))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")

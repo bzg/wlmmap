@@ -1,8 +1,7 @@
-(ns wlmmap.hello
-  (:require
-   [cljs.core.async :refer [chan <! >!]]
-   [blade :refer [L]]
-   [shoreleave.remotes.http-rpc :refer [remote-callback]])
+(ns wlmmap.map
+  (:require [blade :refer [L]]
+            [cljs.core.async :refer [chan <! >!]]
+            [shoreleave.remotes.http-rpc :refer [remote-callback]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (blade/bootstrap)
@@ -10,8 +9,8 @@
 (def tile-url
   "http://{s}.tile.cloudmade.com/3068c9a9c9b648cb910837cf3c5fce10/997/256/{z}/{x}/{y}.png")
 
-(let [mappy (-> L (.map "mappy") 
-                  (.setView [48, 1.2] 3))]
+(let [mappy (-> L (.map "mappy")
+                (.setView [48, 1.2] 3))]
 
   (-> L (.tileLayer tile-url {
             :maxZoom 18

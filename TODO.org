@@ -1,6 +1,7 @@
-* NEXT use blade as leaflet wrapper
-* NEXT use core.async to generate markers
+* NEXT Clean up code
 * NEXT use shoreleave to remote-get redis entries
+* DONE use blade as leaflet wrapper
+* DONE test core.async to generate markers
 * DONE use mapbox.js instead of cloudmap
 * DONE Admin interface to feed redis server
 * DONE Admin login with in-memory login creds
