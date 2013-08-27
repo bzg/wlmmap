@@ -154,9 +154,10 @@
    ;;  "Wikipedia (2 letters):" [:input {:type "text-area" :name "srcountry" :value (:srcountry params)}]
    ;;  [:input {:type "submit" :value "Go"}]]
 
-(def users (atom {"bzg" {:username "bzg"
-                         :password (hash-bcrypt "tintin")
-                         :roles #{::user}}}))
+(def admin
+  (atom {"bzg" {:username "bzg"
+                :password (hash-bcrypt (System/getenv "backendpwd"))
+                :roles #{::user}}}))
 
 (def lang-pairs
 {
@@ -317,7 +318,7 @@
                  :login-uri "/login"
                  :default-landing-uri "/login"
                  :credential-fn
-                 #(creds/bcrypt-credential-fn @users %)
+                 #(creds/bcrypt-credential-fn @admin %)
                  )]}))
 
 (def login-form
