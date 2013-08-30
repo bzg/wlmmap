@@ -8,18 +8,26 @@
 (blade/bootstrap)
 
 (def mymap (-> L .-mapbox (.map "map" "examples.map-uci7ul8p")
-      (.setView [-37.82 175.215] 14)))
+      (.setView [45 3.215] 5)))
 
 (def markers (L/MarkerClusterGroup.))
 
-(doseq [a js/addressPoints]
-  (let [[lat lng title] a
-        icon ((get-in L [:mapbox :marker :icon]) {:marker-symbol "post" :marker-color "0044FF"})
-        marker (-> L (.marker (L/LatLng. lat lng) {:icon icon :title title}))]
-    (.bindPopup marker title)
-    (.addLayer markers marker)))
+(remote-callback
+ :testremote []
+ #(doseq [a %]
+    (when (and (:lat a) (:lon a) (:name a))
+      (let [lat (:lat a)
+            lng (:lon a)
+            title (:name a)
+            icon ((get-in L [:mapbox :marker :icon])
+                  {:marker-symbol "post" :marker-color "0044FF"})
+            marker (-> L (.marker (L/LatLng. lat lng) {:icon icon :title title}))]
+        (.bindPopup marker title)
+        (.addLayer markers marker)))))
 
 (.addLayer mymap markers)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (def tile-url
 ;;   "http://{s}.tile.cloudmade.com/3068c9a9c9b648cb910837cf3c5fce10/997/256/{z}/{x}/{y}.png")

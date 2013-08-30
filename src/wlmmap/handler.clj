@@ -309,8 +309,22 @@
       [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
 
 (defremote testremote []
-  (doseq [m (take 100 (wcar* (car/smembers "frfrim")))]
+  (for [m (take 5000 (wcar* (car/smembers "frfrim")))]
     (read-string (wcar* (car/get m)))))
+
+;; (doseq [m (take 10 (wcar* (car/smembers "frfrim")))]
+;;     (read-string (wcar* (car/get m)))))
+
+;; (defn b []
+;;   (doseq [m (take 10 (wcar* (car/smembers "frfrim")))]
+;;     (wcar* (car/get m))))
+
+;; (defn a []
+;;   (for [m (take 3 (wcar* (car/smembers "frfrim")))]
+;;     (wcar* (car/get m))))
+
+;; (defremote testremote2 []
+;;   "Bonjour")
 
 (defn- testblade []
   (h/html5
