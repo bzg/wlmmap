@@ -308,21 +308,30 @@
       [:div "Password: " [:input {:type "password" :name "password"}]]
       [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
 
-;; (defremote testremote []
-;;   "This is remotely defined")
+(defremote testremote []
+  (doseq [m (take 100 (wcar* (car/smembers "frfrim")))]
+    (read-string (wcar* (car/get m)))))
 
 (defn- testblade []
   (h/html5
    [:head
-    (h/include-css "http://cdn.leafletjs.com/leaflet-0.5/leaflet.css")
+    (h/include-css "http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.css")
     "<!--[if lt IE 8]>"
-    (h/include-css "http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css")
-    "<![endif]-->"]
+    (h/include-css "http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.ie.css")
+    "<![endif]-->"
+    (h/include-css "/css/generic.css")]
    [:body
-    "<div id=\"mappy\" style=\"width: 960px; height: 500px\"></div>"
-    (h/include-js "/js/ArrayLikeIsArray.js"
-                  "http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"
-                  "/js/main.js")]))
+    (h/include-css "http://www.mapbox.com/mapbox.js/assets/MarkerCluster.css")
+    (h/include-css "http://www.mapbox.com/mapbox.js/assets/MarkerCluster.Default.css")
+    (h/include-js "/js/ArrayLikeIsArray.js")
+    (h/include-js "http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.js")
+    "<!--[if lt IE 8]>"
+    (h/include-css "http://www.mapbox.com/mapbox.js/assets/MarkerCluster.Default.ie.css")
+    "<![endif]-->"
+    (h/include-js "http://www.mapbox.com/mapbox.js/assets/leaflet.markercluster.js"
+                  "http://www.mapbox.com/mapbox.js/assets/realworld.388.js")
+    "<div id=\"map\"></div>"
+    (h/include-js "/js/main.js")]))
 
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
