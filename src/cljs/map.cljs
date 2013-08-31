@@ -1,14 +1,14 @@
 (ns wlmmap.map
   (:require [mrhyde.extend-js]
             [blade :refer [L]]
-            [cljs.core.async :refer [chan <! >!]]
+            [cljs.core.async :refer [chan <! >! timeout]]
             [shoreleave.remotes.http-rpc :refer [remote-callback]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (blade/bootstrap)
 
 (def mymap (-> L .-mapbox (.map "map" "examples.map-uci7ul8p")
-      (.setView [45 3.215] 5)))
+               (.setView [45 3.215] 5)))
 
 (def markers (L/MarkerClusterGroup.))
 
@@ -19,15 +19,17 @@
                 lng (last (first a))
                 title (last a)
                 icon ((get-in L [:mapbox :marker :icon])
-                      {:marker-symbol "post" :marker-color "0044FF"})
-                marker (-> L (.marker (L/LatLng. lat lng) {:icon icon :title title}))]
+                      {:marker-symbol "" :marker-color "0044FF"})
+                marker (-> L (.marker (L/LatLng. lat lng)
+                                      {:icon icon}))]
             (.bindPopup marker title)
-            (.addLayer markers marker))
-          (.addLayer mymap markers))))
-  (remote-callback
-   :get-markers []
-   #(doseq [a %] (go (>! ch a)))))
+            (.addLayer markers marker)))))
+  (remote-callback :get-markers []
+                   #(go (doseq [a %]
+                          (<! (timeout 1))
+                          (>! ch a)))))
 
+(.addLayer mymap markers)
 
 ;; FIXME: get language
 ;; (js/alert (.-language js/navigator))
