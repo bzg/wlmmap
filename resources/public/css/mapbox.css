@@ -392,6 +392,7 @@
 .leaflet-popup {
 	position: absolute;
 	text-align: center;
+	width: 300px;
 	}
 
 .leaflet-popup img {
