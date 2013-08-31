@@ -26,11 +26,11 @@
   []
   (str "Destroy"))
 
-;; (defn- cleanup-name [n]
-;;   (-> n
-;;       (clojure.string/replace #"^\[\[|\]\]" "")
-;;       (clojure.string/replace #"[\n\r]" "")
-;;       (clojure.string/replace #"\"" "\\\\\"")))
+(defn- cleanup-name [n]
+  (-> n
+      (clojure.string/replace #"\[\[|\]\]|[\n\r]" "")
+      ;; (clojure.string/replace #"\"" "\\\\\"")
+      ))
 
 (def server1-conn
   {:pool {} :spec {:uri (System/getenv "OPENREDIS_URL")}})
@@ -138,152 +138,178 @@
 
 (def lang-pairs
 {
-73, ["ad" 	"ca"]
-0, ["aq" 	"en"]
-1, ["ar" 	"es"]
-2, ["at" 	"de"]
-3, ["be-bru" 	"nl"]
-4, ["be-vlg" 	"en"]
-5, ["be-vlg" 	"fr"]
-6, ["be-vlg" 	"nl"]
-7, ["be-wal" 	"en"]
-8, ["be-wal" 	"fr"]
-9, ["be-wal" 	"nl"]
-10, ["bo" 	"es"]
-11, ["by" 	"be-x-old"]
-12, ["ca" 	"en"]
-13, ["ca" 	"fr"]
-14, ["ch" 	"fr"]
-15, ["ch-old" 	"de"]
-16, ["ch-old" 	"en"]
-17, ["ch-old" 	"it"]
-18, ["cl" 	"es"]
-19, ["co" 	"es"]
-20, ["cz" 	"cs"]
-21, ["de-by" 	"de"]
-22, ["de-he" 	"de"]
-23, ["de-nrw" 	"de"]
-24, ["de-nrw-bm" 	"de"]
-25, ["de-nrw-k" 	"de"]
-26, ["dk-bygning" 	"da"]
-27, ["dk-fortids" 	"da"]
-28, ["ee" 	"et"]
-29, ["es" 	"ca"]
-30, ["es" 	"es"]
-31, ["es" 	"gl"]
-32, ["fr" 	"ca"]
-33, ["fr" 	"fr"]
-34, ["gb-eng" 	"en"]
-35, ["gb-nir" 	"en"]
-36, ["gb-sct" 	"en"]
-37, ["gb-wls" 	"en"]
-38, ["gh" 	"en"]
-39, ["ie" 	"en"]
-40, ["il" 	"he"]
-41, ["in" 	"en"]
-42, ["it" 	"it"]
-43, ["it-88" 	"ca"]
-44, ["it-bz" 	"de"]
-45, ["ke" 	"en"]
-46, ["lu" 	"lb"]
-47, ["mt" 	"de"]
-48, ["mx" 	"es"]
-49, ["nl" 	"nl"]
-50, ["nl-gem" 	"nl"]
-51, ["no" 	"no"]
-52, ["pa" 	"es"]
-53, ["ph" 	"en"]
-54, ["pk" 	"en"]
-55, ["pl" 	"pl"]
-56, ["pt" 	"pt"]
-57, ["ro" 	"ro"]
-58, ["rs" 	"sr"]
-59, ["ru" 	"ru"]
-60, ["se-bbr" 	"sv"]
-61, ["se-fornmin" 	"sv"]
-62, ["se-ship" 	"sv"]
-63, ["sk" 	"de"]
-64, ["sk" 	"sk"]
-65, ["th" 	"th"]
-66, ["tn" 	"fr"]
-67, ["ua" 	"uk"]
-68, ["us" 	"en"]
-69, ["us-ca" 	"en"]
-70, ["uy" 	"es"]
-71, ["ve" 	"es"]
-72, ["za" 	"en"]
+0, ["aq" 	   "en"]
+1, ["ar" 	   "es"]
+2, ["at" 	   "de"]
+3, ["be-bru" 	   "nl"]
+4, ["be-vlg" 	   "en"]
+5, ["be-vlg" 	   "fr"]
+6, ["be-vlg" 	   "nl"]
+7, ["be-wal" 	   "en"]
+8, ["be-wal" 	   "fr"]
+9, ["be-wal" 	   "nl"]
+10, ["bo" 	   "es"]
+11, ["by" 	   "be-x-old"]
+12, ["ca" 	   "en"]
+13, ["ca" 	   "fr"]
+14, ["ch" 	   "fr"]
+15, ["ch-old" 	   "de"]
+16, ["ch-old" 	   "en"]
+17, ["ch-old" 	   "it"]
+18, ["cl" 	   "es"]
+19, ["co" 	   "es"]
+20, ["cz" 	   "cs"]
+21, ["de-by" 	   "de"]
+22, ["de-he" 	   "de"]
+23, ["de-nrw" 	   "de"]
+24, ["de-nrw-bm"   "de"]
+25, ["de-nrw-k"    "de"]
+26, ["dk-bygning"  "da"]
+27, ["dk-fortids"  "da"]
+28, ["ee" 	   "et"]
+29, ["es" 	   "ca"]
+30, ["es" 	   "es"]
+31, ["es" 	   "gl"]
+32, ["fr" 	   "ca"]
+33, ["fr" 	   "fr"]
+34, ["gb-eng" 	   "en"]
+35, ["gb-nir" 	   "en"]
+36, ["gb-sct" 	   "en"]
+37, ["gb-wls" 	   "en"]
+38, ["gh" 	   "en"]
+39, ["ie" 	   "en"]
+40, ["il" 	   "he"]
+41, ["in" 	   "en"]
+42, ["it" 	   "it"]
+43, ["it-88" 	   "ca"]
+44, ["it-bz" 	   "de"]
+45, ["ke" 	   "en"]
+46, ["lu" 	   "lb"]
+47, ["mt" 	   "de"]
+48, ["mx" 	   "es"]
+49, ["nl" 	   "nl"]
+50, ["nl-gem" 	   "nl"]
+51, ["no" 	   "no"]
+52, ["pa" 	   "es"]
+53, ["ph" 	   "en"]
+54, ["pk" 	   "en"]
+55, ["pl" 	   "pl"]
+56, ["pt" 	   "pt"]
+57, ["ro" 	   "ro"]
+58, ["rs" 	   "sr"]
+59, ["ru" 	   "ru"]
+60, ["se-bbr" 	   "sv"]
+61, ["se-fornmin"  "sv"]
+62, ["se-ship" 	   "sv"]
+63, ["sk" 	   "de"]
+64, ["sk" 	   "sk"]
+65, ["th" 	   "th"]
+66, ["tn" 	   "fr"]
+67, ["ua" 	   "uk"]
+68, ["us" 	   "en"]
+69, ["us-ca" 	   "en"]
+70, ["uy" 	   "es"]
+71, ["ve" 	   "es"]
+72, ["za" 	   "en"]
+73, ["ad" 	   "ca"]
 })
 
-(defn- storemons
+(def toolserver-url "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000")
+
+(defn- backend
   "interface to select which lang/country to store"
   [req]
   (h/html5
-   [:h1 "Select lang and country to store"]
-   [:table
-    [:tr
-     [:td {:style "width: 100px;"} "#"]
-     [:td {:style "width: 100px;"} "Lang"]
-     [:td {:style "width: 100px;"} "Country"]
-     [:td {:style "width: 200px;"} "Last updated"]
-     [:td {:style "width: 300px;"} "Continue from"]
-     ]]
-   (doall (map
-           #(let [fval (first (val %))
-                  lval (last (val %))
-                  hset (str "h" fval lval)
-                  cont (wcar* (car/hget hset "continue"))
-                  updt (wcar* (car/hget hset "updated"))]
-              (h/html5
-               [:form {:method "POST" :action "/storemons0"}
-                [:table
-                 [:tr 
-                  [:td {:style "width: 100px;"}
-                   (wcar* (car/hget (str "h" fval lval) "size"))]
-                  [:td {:style "width: 100px;"}
-                   lval [:input {:type "hidden" :name "lang" :value lval}]]
-                  [:td {:style "width: 100px;"}
-                   fval [:input {:type "hidden" :name "country" :value fval}]]
-                  [:td {:style "width: 200px;"} updt]
-                  [:td {:style "width: 300px;"}
-                   cont [:input {:type "hidden" :name "cont" :value cont}]]
-                  [:td [:input {:type "submit" :value "Go"}]]]]]))
-           lang-pairs))))
+   [:head (h/include-css "/css/admin.css")]
+   [:body
+    [:h1 "Select the lang and the country of monuments to store"]
+    [:table {:style "width: 80%;"}
+     [:tr
+      [:td {:style "width: 100px;"} "#"]
+      [:td {:style "width: 100px;"} "Lang"]
+      [:td {:style "width: 100px;"} "Country"]
+      [:td {:style "width: 200px;"} "Last updated"]
+      [:td {:style "width: 300px;"} "Continue from"]]
+     (doall
+      (map
+       #(let [fval (first (val %))
+              lval (last (val %))
+              col (odd? (key %))
+              stats (str "s" fval lval)
+              cont (wcar* (car/hget stats "continue"))
+              updt (wcar* (car/hget stats "updated"))
+              size (wcar* (car/hget (str "s" fval lval) "size"))]
+          [:form {:method "POST" :action "/process"}
+           [:tr {:style (str "background-color: " (if col "white" "white"))}
+            [:td {:style "width: 100px;"} size]
+            [:td {:style "width: 100px;"} lval
+             [:input {:type "hidden" :name "lang" :value lval}]]
+            [:td {:style "width: 100px;"}
+             fval [:input {:type "hidden" :name "country" :value fval}]]
+            [:td {:style "width: 200px;"} updt]
+            [:td {:style "width: 300px;"} cont
+             [:input {:type "hidden" :name "cont" :value cont}]]
+            [:td [:input {:type "submit" :value "Go"}]]]])
+       lang-pairs))]]))
 
-(defn- storemons0
-  "store all monuments from a request"
+(defn- process
+  "Connect to the toolserver and store monuments in the redis database"
   [params]
   (let [cntry (:country params)
         lang (:lang params)
-        req (str "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000"
-                 "&srcountry=" cntry "&srlang=" lang
+        req (str toolserver-url "&srcountry=" cntry "&srlang=" lang
                  (when (not (= (:cont params) ""))
                    (str "&srcontinue=" (:cont params))))
-        set (str cntry lang)
+        rset (str cntry lang)
         res (json/read-str (slurp req) :key-fn keyword)
         next (or (:srcontinue (:continue res)) "")]
-    (do (doall (map
-                #(wcar* (do (car/set (:id %) (str %))
-                            (car/sadd set (:id %))
-                            (when (not (= (:monument_article %) ""))
-                              (car/sadd (str set "ar") (:id %)))
-                            (when (not (= (:image %) ""))
-                              (car/sadd (str set "im") (:id %)))))
-                (:monuments res)))
-        (let [card (wcar* (car/scard set))]
-          (wcar* (car/hmset (str "h" set) "size" card
-                            "updated" (java.util.Date.)
-                            "continue" next))
-          (h/html5
-           [:h1 (format "Store monuments for country %s and lang %s into \"%s\""
-                        (:country params) (:lang params) set)]
-           [:form {:method "POST" :action "/storemons0" :class "main"}
-            [:h2 "Current continuation"] (:cont params)
-            [:h2 "Done"] card
-            [:h2 "Next"]
-            [:input {:type "hidden" :name "country" :value (:country params)}]
-            [:input {:type "hidden" :name "lang" :value (:lang params)}]
-            [:input {:type "text-area" :name "cont" :value next}]
-            [:input {:type "submit" :value "go"}]])))))
+    (doseq [m (:monuments res)]
+      (when (and (not (nil? (:lat m)))
+                 (not (nil? (:lon m)))
+                 (not (= "" (:name m))))
+        (let [;; reg (:registrant_url m)
+              ;; id (:id m)
+              nam (cleanup-name (:name m))
+              ;; imc (:image m)
+              ;; img (codec/url-encode m)
+              ;; lng (:lang m)
+              ;; emb (str "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" img "&width=250\" />")
+              ;; ilk (if (not (= imc ""))
+              ;;       (str "<a href=\"http://commons.wikimedia.org/wiki/File:"
+              ;;            img "\">" emb "</a>") "")
+              art (:monument_article m)
+              lnk "<a href=\"http://%s.wikipedia.org/wiki/%s\">%s</a>"
+              ;; arl (format "<a href=\"http://%s.wikipedia.org/wiki/%s\">%s</a>" lng art art)
+              ;; src (format "Source: <a target=\"_blank\" href=\"%s\">%s</a>" reg id)
+              ]
+          (wcar* (car/hset rset    ; key
+                           (:id m) ; field
+                           (list (list (:lat m) (:lon m))
+                                 (str "<h3>" nam "</h3>"
+                                      (if (not (= "" art)) "ok" "notok")
+                                      lnk
+                                      ;; ilk "<br/>" (if art (str arl "<br/>") "")
+                                      ;; src
+                                      )))))))
+    (let [card (count (wcar* (car/hvals rset)))]
+      (wcar* (car/hmset (str "s" rset)
+                        "size" card
+                        "updated" (java.util.Date.)
+                        "continue" next))
+      (h/html5
+       [:head (h/include-css "/css/admin.css")]
+       [:body
+        [:h1 (format "Store monuments for country %s and lang %s into \"%s\""
+                     (:country params) (:lang params) rset)]
+        [:form {:method "POST" :action "/process" :class "main"}
+         [:h2 "Current continuation"] (:cont params)
+         [:h2 "Done"] card
+         [:h2 "Next"]
+         [:input {:type "hidden" :name "country" :value (:country params)}]
+         [:input {:type "hidden" :name "lang" :value (:lang params)}]
+         [:input {:type "text-area" :name "cont" :value next}]
+         [:input {:type "submit" :value "go"}]]
+        "Back to <a href=\"/backend\">backend</a>"]))))
 
 (defn wrap-friend [handler]
   "Wrap friend authentication around handler."
@@ -295,37 +321,23 @@
                  :login-uri "/login"
                  :default-landing-uri "/login"
                  :credential-fn
-                 #(creds/bcrypt-credential-fn @admin %)
-                 )]}))
+                 #(creds/bcrypt-credential-fn @admin %))]}))
 
-(def login-form
-  [:div {:class "row"}
-   [:div {:class "columns small-12"}
-    [:h1 "Login (for existing users)"]
+(defn- login-form []
+  (h/html5
+   [:head (h/include-css "/css/admin.css")]
+   [:body
     [:div {:class "row"}
-     [:form {:method "POST" :action "login" :class "columns small-4"}
-      [:div "Username: " [:input {:type "text" :name "username"}]]
-      [:div "Password: " [:input {:type "password" :name "password"}]]
-      [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
+     [:div {:class "columns small-12"}
+      [:h1 "Admin login"]
+      [:div {:class "row"}
+       [:form {:method "POST" :action "login"}
+        [:div "Username: " [:input {:type "text" :name "username"}]]
+        [:div "Password: " [:input {:type "password" :name "password"}]]
+        [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]]]))
 
-(defremote testremote []
-  (for [m (take 500 (wcar* (car/smembers "frfrim")))]
-    ;; This must be very slow!!!
-    (read-string (wcar* (car/get m)))))
-
-;; (doseq [m (take 10 (wcar* (car/smembers "frfrim")))]
-;;     (read-string (wcar* (car/get m)))))
-
-;; (defn b []
-;;   (doseq [m (take 10 (wcar* (car/smembers "frfrim")))]
-;;     (wcar* (car/get m))))
-
-;; (defn a []
-;;   (for [m (take 3 (wcar* (car/smembers "frfrim")))]
-;;     (wcar* (car/get m))))
-
-;; (defremote testremote2 []
-;;   "Bonjour")
+(defremote get-markers [db]
+  (wcar* (car/hvals db)))
 
 (defn- testblade []
   (h/html5
@@ -343,17 +355,17 @@
     "<!--[if lt IE 8]>"
     (h/include-css "http://www.mapbox.com/mapbox.js/assets/MarkerCluster.Default.ie.css")
     "<![endif]-->"
-    (h/include-js "http://www.mapbox.com/mapbox.js/assets/leaflet.markercluster.js"
-                  "http://www.mapbox.com/mapbox.js/assets/realworld.388.js")
+    (h/include-js "http://www.mapbox.com/mapbox.js/assets/leaflet.markercluster.js")
     "<div id=\"map\"></div>"
     (h/include-js "/js/main.js")]))
 
+;; FIXME remote req from admin?
 (defroutes app-routes 
   ;; (GET "/" {params :params} (index params))
   ;; (POST "/" {params :params} (index params))
-  (GET "/storemons" req (if-let [identity (friend/identity req)] (storemons req) "Doh!"))
-  (POST "/storemons0" {params :params} (storemons0 params))
-  (GET "/login" req (h/html5 login-form))
+  (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
+  (POST "/process" {params :params} (process params))
+  (GET "/login" [] (login-form))
   (GET "/testblade" [] (testblade))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")
