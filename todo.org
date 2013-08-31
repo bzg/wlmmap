@@ -1,5 +1,9 @@
-* NEXT Clean up code
-* NEXT use shoreleave to remote-get redis entries
+* TODO store correct infos in the rd db
+* TODO allow to delete/reset a hset from backend
+* TODO move testblade to index
+* TODO handle lang parameter
+* DONE http://s.trokes.org/dribnet/6386795
+* DONE use shoreleave to remote-get redis entries
 * DONE use blade as leaflet wrapper
 * DONE test core.async to generate markers
 * DONE use mapbox.js instead of cloudmap
