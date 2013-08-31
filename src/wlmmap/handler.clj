@@ -125,7 +125,7 @@
 
 (defn- backend
   "interface to select which lang/country to store"
-  [req]
+  []
   (h/html5
    [:head (h/include-css "/css/admin.css")]
    [:body
@@ -173,31 +173,25 @@
     (doseq [m (:monuments res)]
       (when (and (not (nil? (:lat m)))
                  (not (nil? (:lon m)))
-                 (not (= "" (:name m))))
-        (let [;; reg (:registrant_url m)
-              ;; id (:id m)
+                 (not (= "" (:name m)))
+                 (not (= "" (:image m))))
+        (let [reg (:registrant_url m)
+              id (:id m)
               nam (cleanup-name (:name m))
-              ;; imc (:image m)
-              ;; img (codec/url-encode m)
-              ;; lng (:lang m)
-              ;; emb (str "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" img "&width=250\" />")
-              ;; ilk (if (not (= imc ""))
-              ;;       (str "<a href=\"http://commons.wikimedia.org/wiki/File:"
-              ;;            img "\">" emb "</a>") "")
+              imc (:image m)
+              img (codec/url-encode imc)
+              lng (:lang m)
+              emb (str "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" img "&width=250\" />")
+              ilk (when (not (= imc "")) (str "<a href=\"http://commons.wikimedia.org/wiki/File:" img "\" target=\"_blank\">" emb "</a>"))
               art (:monument_article m)
-              lnk "<a href=\"http://%s.wikipedia.org/wiki/%s\">%s</a>"
-              ;; arl (format "<a href=\"http://%s.wikipedia.org/wiki/%s\">%s</a>" lng art art)
-              ;; src (format "Source: <a target=\"_blank\" href=\"%s\">%s</a>" reg id)
-              ]
-          (wcar* (car/hset rset    ; key
-                           (:id m) ; field
-                           (list (list (:lat m) (:lon m))
-                                 (str "<h3>" nam "</h3>"
-                                      (if (not (= "" art)) "ok" "notok")
-                                      lnk
-                                      ;; ilk "<br/>" (if art (str arl "<br/>") "")
-                                      ;; src
-                                      )))))))
+              lnk "<a href=\"http://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>"
+              arl (format lnk lng (codec/url-encode art) art)
+              src (format "Source: <a href=\"%s\" target=\"_blank\">%s</a>" reg id)
+              all (str "<h3>" nam "</h3>"
+                                      (when (not (= "" imc)) (str ilk "<br/>"))
+                                      (when (not (= "" art)) (str arl "<br/>"))
+                                      (when (not (= "" reg)) src))]
+          (wcar* (car/hset rset (:id m) (list (list (:lat m) (:lon m)) all))))))
     (let [card (count (wcar* (car/hvals rset)))]
       (wcar* (car/hmset (str "s" rset)
                         "size" card
@@ -249,23 +243,22 @@
   (wcar* (car/hvals @db)))
 
 (defn- index [params]
-  ;; (swap! db ((if (:lang params) (:lang params) "fr") language-db))
   (h/html5
    [:head
-    (h/include-css "http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.css")
+    (h/include-css "/css/mapbox.css")
     "<!--[if lt IE 8]>"
-    (h/include-css "http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.ie.css")
+    (h/include-css "/css/mapbox.ie.css")
     "<![endif]-->"
     (h/include-css "/css/generic.css")]
    [:body
-    (h/include-css "http://www.mapbox.com/mapbox.js/assets/MarkerCluster.css")
-    (h/include-css "http://www.mapbox.com/mapbox.js/assets/MarkerCluster.Default.css")
+    (h/include-css "/css/MarkerCluster.css")
+    (h/include-css "/css/MarkerCluster.Default.css")
     (h/include-js "/js/ArrayLikeIsArray.js")
-    (h/include-js "http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.js")
+    (h/include-js "/js/mapbox.js")
     "<!--[if lt IE 8]>"
-    (h/include-css "http://www.mapbox.com/mapbox.js/assets/MarkerCluster.Default.ie.css")
+    (h/include-css "/css/MarkerCluster.Default.ie.css")
     "<![endif]-->"
-    (h/include-js "http://www.mapbox.com/mapbox.js/assets/leaflet.markercluster.js")
+    (h/include-js "/js/leaflet.markercluster.js")
     "<div id=\"map\"></div>"
     (h/include-js "/js/main.js")]))
 
@@ -273,7 +266,7 @@
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
   (POST "/" {params :params} (index params))
-  (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
+  (GET "/backend" req (if-let [identity (friend/identity req)] (backend) "Doh!"))
   (POST "/process" {params :params} (process params))
   (GET "/login" [] (login-form))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
