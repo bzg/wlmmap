@@ -25,7 +25,7 @@
             (.addLayer markers marker))
           (.addLayer mymap markers))))
   (remote-callback
-   :get-markers ["ares"]
+   :get-markers []
    #(doseq [a %] (go (>! ch a)))))
 
 

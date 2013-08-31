@@ -38,99 +38,6 @@
 (defmacro wcar* [& body]
   `(car/wcar server1-conn ~@body))
 
-;; (defn- generate-markers
-;;   "return a string with the javascript code to generate addressPoints."
-;;   [params]
-;;   (let [mons (take 1000 (wcar* (car/smembers "frfrim")))
-;;         all (remove #(nil? %)
-;;                     (for [m mons]
-;;                       (let [res (read-string (wcar* (car/get m)))
-;;                             lat (:lat res)
-;;                             lon (:lon res)
-;;                             reg (:registrant_url res)
-;;                             id (:id res)
-;;                             nam (cleanup-name (:name res))
-;;                             imc (:image res)
-;;                             img (codec/url-encode imc)
-;;                             lng (:lang res)
-;;                             emb (str "<img src=\\\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" 
-;;                                      img "&width=250\\\" />")
-;;                             ilk (if (not (= imc ""))
-;;                                   (str "<a href=\\\"http://commons.wikimedia.org/wiki/File:"
-;;                                        img "\\\">" emb "</a>") "")
-;;                             art (:monument_article res)
-;;                             arl (format "<a href=\\\"http://%s.wikipedia.org/wiki/%s\\\">%s</a>" lng art art)
-;;                             src (format "Source: <a target=\\\"blank\\\" href=\\\"%s\\\">%s</a>" reg id)]
-;;                         (when (and lat lon nam)
-;;                           (format "[%s,%s,\"%s\",\"%s\"]" lat lon nam
-;;                                   (str "<h3>" nam "</h3>"
-;;                                        ilk "<br/>" (if art (str arl "<br/>") "")
-;;                                        src "<br/>"))))))]
-;;     (str "var addressPoints = [" (str/join "," all) "];")))
-
-;; (defn- index [params]
-;;   (h/html5
-;;    [:head
-;;     (h/include-css "/css/generic.css" "/css/mapbox.css")
-;;     "<!--[if lt IE 8]>"
-;;     (h/include-css "/css/mapbox.ie.css")
-;;     "<![endif]-->"
-;;     (h/include-js "/js/mapbox.js")]
-   
-;;    [:body
-;;     (h/include-css "/css/generic.css" "/css/Control.MiniMap.css")
-;;     (h/include-css "/css/MarkerCluster.Default.css")
-;;     "<!--[if lt IE 8]>"
-;;     (h/include-css "/css/MarkerCluster.Default.ie.css")
-;;     "<![endif]-->"
-;;     (h/include-js "/js/leaflet.markercluster.js")
-;;     (h/include-js "/js/Control.MiniMap.js")    
-
-;;     "<script type='text/javascript'>"
-    
-;;     (generate-markers params)
-    
-;;     "</script>\n"
-    
-;;     "
-;; <!-- <div class='corner'> -->
-;; <!-- <span>...</span> -->
-;; <!-- </div> -->
-
-;; <div id='map'></div>
-
-;; <script type='text/javascript'>
-;;     var map = L.mapbox.map('map', 'examples.map-uci7ul8p')
-;;         .setView([48, 1.2], 3)
-;;         .on('ready', function() {
-;;         new L.Control.MiniMap(L.mapbox.tileLayer('examples.map-uci7ul8p'))
-;;           .addTo(map);
-;;       });
-
-;;     // centering
-;;     map.markerLayer.on('click', function(e) {
-;;         map.panTo(e.layer.getLatLng());
-;;     });
-
-;;     var markers = new L.MarkerClusterGroup();
-
-;;     for (var i = 0; i < addressPoints.length; i++) {
-;;         var a = addressPoints[i];
-;;         var title = a[2];
-;;         var popup = a[3];
-;;         var marker = L.marker(new L.LatLng(a[0], a[1]), {
-;;             icon: L.mapbox.marker.icon({'marker-symbol': 'post', 'marker-color': '0044FF'}),
-;;             title: title
-;;         });
-;;         marker.bindPopup(popup,{minWidth:270});
-;;         markers.addLayer(marker);
-;;     }
-
-;;     map.addLayer(markers);
-;; </script>
-;; "
-;;     ]))
-
 (def admin
   (atom {"bzg" {:username "bzg"
                 :password (hash-bcrypt (System/getenv "backendpwd"))
@@ -336,10 +243,13 @@
         [:div "Password: " [:input {:type "password" :name "password"}]]
         [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]]]))
 
-(defremote get-markers [db]
-  (wcar* (car/hvals db)))
+(def db (atom "frfr"))
 
-(defn- testblade []
+(defremote get-markers []
+  (wcar* (car/hvals @db)))
+
+(defn- index [params]
+  ;; (swap! db ((if (:lang params) (:lang params) "fr") language-db))
   (h/html5
    [:head
     (h/include-css "http://api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.css")
@@ -361,12 +271,11 @@
 
 ;; FIXME remote req from admin?
 (defroutes app-routes 
-  ;; (GET "/" {params :params} (index params))
-  ;; (POST "/" {params :params} (index params))
+  (GET "/" {params :params} (index params))
+  (POST "/" {params :params} (index params))
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   (POST "/process" {params :params} (process params))
   (GET "/login" [] (login-form))
-  (GET "/testblade" [] (testblade))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")
   (route/not-found "Not found"))
