@@ -404,6 +404,7 @@
 	text-align: center;
 	-webkit-border-radius: 12px;
 	        border-radius: 12px;
+	width: 300px;
 	}
 .leaflet-popup-content {
 	margin: 13px 19px;
