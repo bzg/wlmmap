@@ -7,6 +7,10 @@
 
 (blade/bootstrap)
 
+(def lang (.-language js/navigator))
+
+(remote-callback :set-db0 [lang] nil)
+
 (def mymap (-> L .-mapbox (.map "map" "examples.map-uci7ul8p")
                (.setView [45 3.215] 5)))
 
@@ -31,5 +35,6 @@
 
 (.addLayer mymap markers)
 
-;; FIXME: get language
-;; (js/alert (.-language js/navigator))
+(remote-callback
+ :get-center []
+ #(.setView mymap (vector (first %) (last %)) 5))

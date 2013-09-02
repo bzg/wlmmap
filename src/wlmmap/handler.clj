@@ -14,6 +14,7 @@
                        [route :as route])
             [hiccup.page :as h]
             [hiccup.element :as e]
+            [hiccup.form :as f]
             [shoreleave.middleware.rpc :refer [defremote wrap-rpc]]))
 
 (defn init 
@@ -28,9 +29,8 @@
 
 (defn- cleanup-name [n]
   (-> n
-      (clojure.string/replace #"\[\[|\]\]|[\n\r]" "")
-      ;; (clojure.string/replace #"\"" "\\\\\"")
-      ))
+      (clojure.string/replace #"\[\[([^]]+)\|[^]]+\]\]" "$1")
+      (clojure.string/replace #"\[\[|\]\]|[\n\r]+|\{\{[^}]+\}\}" "")))
 
 (def server1-conn
   {:pool {} :spec {:uri (System/getenv "OPENREDIS_URL")}})
@@ -123,94 +123,179 @@
 
 (def toolserver-url "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000")
 
+(def db (atom '("frfr")))
+(def db0 (atom '("frfr")))
+
+(def db-options
+  (sort (map #(str (first (val %)) "/" (last (val %))) lang-pairs)))
+
+(defremote set-db0 [lang]
+  (let [listdb
+        (remove nil?
+                (map #(when (= lang (last (val %)))
+                        (str (first (val %)) (last (val %))))
+                     lang-pairs))]
+    (if (empty? listdb)
+      (reset! db0 '("frfr"))
+      (reset! db0 listdb))))
+
+(defremote get-markers []
+  (apply concat (map #(wcar* (car/hvals %)) @db)))
+
+(defremote get-center []
+  (wcar* (car/hget (str "s" (first @db)) "rep")))
+
+(defn- index [params]
+  (h/html5
+   (do
+     (if (:db params)
+       (reset! db (list (clojure.string/replace (:db params) #"/" "")))
+       (reset! db @db0))
+     (when (= "false" (:wi params))
+       (reset! db (map #(str % "ni") @db))))
+   [:head
+    (h/include-css "/css/mapbox.css")
+    "<!--[if lt IE 8]>"
+    (h/include-css "/css/mapbox.ie.css")
+    "<![endif]-->"
+    (h/include-css "/css/generic.css")]
+   [:body
+    (h/include-css "/css/MarkerCluster.css")
+    (h/include-css "/css/MarkerCluster.Default.css")
+    (h/include-js "/js/ArrayLikeIsArray.js")
+    (h/include-js "/js/mapbox.js")
+    "<!--[if lt IE 8]>"
+    (h/include-css "/css/MarkerCluster.Default.ie.css")
+    "<![endif]-->"
+    (h/include-js "/js/leaflet.markercluster.js")
+    "<div id=\"map\"></div>"
+    [:div {:class "corner"}
+     [:form
+      [:span
+       "<p>Country/Language: "
+       (f/drop-down "db" db-options)
+       "</p>"
+       "<p>"
+       "With images: "
+       (f/check-box "wi")
+       "</p>"
+       [:input {:type "submit" :value "Go"}]]]]
+    (h/include-js "/js/main.js")]))
+
 (defn- backend
   "interface to select which lang/country to store"
-  []
+  [params]
   (h/html5
    [:head (h/include-css "/css/admin.css")]
    [:body
     [:h1 "Select the lang and the country of monuments to store"]
-    [:table {:style "width: 80%;"}
+    [:table {:style "width: 100%;"}
      [:tr
-      [:td {:style "width: 100px;"} "#"]
-      [:td {:style "width: 100px;"} "Lang"]
+      [:td {:style "width: 200px;"} "#"]
+      [:td {:style "width: 200px;"} "# (w/ pic)"]
+      [:td {:style "width: 300px;"} "rep (im)"]
       [:td {:style "width: 100px;"} "Country"]
-      [:td {:style "width: 200px;"} "Last updated"]
-      [:td {:style "width: 300px;"} "Continue from"]]
+      [:td {:style "width: 100px;"} "Lang"]
+      [:td {:style "width: 500px;"} "Last updated"]
+      [:td {:style "width: 200px;"} "Continue from"]
+      [:td {:style "width: 100px;"} "Add more"]
+      [:td {:style "width: 100px;"} "Delete"]]
      (doall
+      (if (not (= "" (:del params)))
+        (wcar* (car/del (:del params) (str "s" (:del params)) (str (:del params) "ni"))))
       (map
        #(let [fval (first (val %))
               lval (last (val %))
               col (odd? (key %))
               stats (str "s" fval lval)
+              rep (str (wcar* (car/hget stats "rep")))
               cont (wcar* (car/hget stats "continue"))
               updt (wcar* (car/hget stats "updated"))
-              size (wcar* (car/hget (str "s" fval lval) "size"))]
-          [:form {:method "POST" :action "/process"}
-           [:tr {:style (str "background-color: " (if col "white" "white"))}
+              size (wcar* (car/hget (str "s" fval lval) "size"))
+              sizeni (wcar* (car/hget (str "s" fval lval) "sizeni"))]
+          [:tr {:style (str "background-color: " (if col "white" "white"))}
+           [:form {:method "POST" :action "/process"}
             [:td {:style "width: 100px;"} size]
+            [:td {:style "width: 100px;"} sizeni]
+            [:td {:style "width: 100px;"} rep]
+            [:td {:style "width: 100px;"} fval
+             [:input {:type "hidden" :name "country" :value fval}]]
             [:td {:style "width: 100px;"} lval
-             [:input {:type "hidden" :name "lang" :value lval}]]
-            [:td {:style "width: 100px;"}
-             fval [:input {:type "hidden" :name "country" :value fval}]]
+             [:input {:type "hidden" :name "srlang" :value lval}]]
             [:td {:style "width: 200px;"} updt]
             [:td {:style "width: 300px;"} cont
              [:input {:type "hidden" :name "cont" :value cont}]]
-            [:td [:input {:type "submit" :value "Go"}]]]])
+            [:td [:input {:type "submit" :value "Go"}]]]
+           [:form {:method "POST" :action "/backend"}
+            [:td {:style "width: 100px;"}
+             [:input {:type "hidden" :name "del" :value (str fval lval)}]
+             [:input {:type "submit" :value "Delete"}]]]])
        lang-pairs))]]))
 
 (defn- process
-  "Connect to the toolserver and store monuments in the redis database"
+  "Connect to the toolserver and store results in the database."
   [params]
   (let [cntry (:country params)
-        lang (:lang params)
-        req (str toolserver-url "&srcountry=" cntry "&srlang=" lang
-                 (when (not (= (:cont params) ""))
+        srlang (:srlang params)
+        req (str toolserver-url "&srcountry=" cntry "&srlang=" srlang
+                 (when (not (= "" (:cont params)))
                    (str "&srcontinue=" (:cont params))))
-        rset (str cntry lang)
+        rset (str cntry srlang)
         res (json/read-str (slurp req) :key-fn keyword)
         next (or (:srcontinue (:continue res)) "")]
     (doseq [m (:monuments res)]
       (when (and (not (nil? (:lat m)))
                  (not (nil? (:lon m)))
-                 (not (= "" (:name m)))
-                 (not (= "" (:image m))))
+                 (not (or (nil? (:name m)) (= "" (:name m)))))
         (let [reg (:registrant_url m)
+              db (if (= "" (:image m)) (str rset "ni") rset)
               id (:id m)
               nam (cleanup-name (:name m))
               imc (:image m)
               img (codec/url-encode imc)
               lng (:lang m)
               emb (str "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" img "&width=250\" />")
-              ilk (when (not (= imc "")) (str "<a href=\"http://commons.wikimedia.org/wiki/File:" img "\" target=\"_blank\">" emb "</a>"))
+              ilk (str "<a href=\"http://commons.wikimedia.org/wiki/File:" img "\" target=\"_blank\">" emb "</a>")
               art (:monument_article m)
               lnk "<a href=\"http://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>"
               arl (format lnk lng (codec/url-encode art) art)
               src (format "Source: <a href=\"%s\" target=\"_blank\">%s</a>" reg id)
               all (str "<h3>" nam "</h3>"
-                                      (when (not (= "" imc)) (str ilk "<br/>"))
-                                      (when (not (= "" art)) (str arl "<br/>"))
-                                      (when (not (= "" reg)) src))]
-          (wcar* (car/hset rset (:id m) (list (list (:lat m) (:lon m)) all))))))
-    (let [card (count (wcar* (car/hvals rset)))]
+                       (when (not (= "" imc)) (str ilk "<br/>"))
+                       (when (not (= "" art)) (str arl "<br/>"))
+                       (when (not (= "" reg)) src))]
+          (wcar* (car/hset db (:id m) (list (list (:lat m) (:lon m)) all))))))
+    (let [all (wcar* (car/hvals rset))
+          allni (wcar* (car/hvals (str rset "ni")))
+          size (count all)
+          sizeni (count allni)
+          rep (first all)
+          repni (first allni)
+          llat (first (first rep))
+          llon (last (first rep))
+          llatni (first (first repni))
+          llonni (last (first repni))]
       (wcar* (car/hmset (str "s" rset)
-                        "size" card
+                        "rep" (list llat llon)
+                        "repni" (list llatni llonni)
+                        "size" size
+                        "sizeni" sizeni
                         "updated" (java.util.Date.)
                         "continue" next))
       (h/html5
        [:head (h/include-css "/css/admin.css")]
        [:body
         [:h1 (format "Store monuments for country %s and lang %s into \"%s\""
-                     (:country params) (:lang params) rset)]
+                     (:country params) (:srlang params) rset)]
         [:form {:method "POST" :action "/process" :class "main"}
-         [:h2 "Current continuation"] (:cont params)
-         [:h2 "Done"] card
+         [:h2 "Continuated from"] (:cont params)
+         [:h2 "Done"] size
          [:h2 "Next"]
          [:input {:type "hidden" :name "country" :value (:country params)}]
-         [:input {:type "hidden" :name "lang" :value (:lang params)}]
+         [:input {:type "hidden" :name "srlang" :value (:srlang params)}]
          [:input {:type "text-area" :name "cont" :value next}]
          [:input {:type "submit" :value "go"}]]
-        "Back to <a href=\"/backend\">backend</a>"]))))
+        "<br/><p>Back to <a href=\"/backend\">backend</a></p>"]))))
 
 (defn wrap-friend [handler]
   "Wrap friend authentication around handler."
@@ -237,36 +322,11 @@
         [:div "Password: " [:input {:type "password" :name "password"}]]
         [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]]]))
 
-(def db (atom "frfr"))
-
-(defremote get-markers []
-  (wcar* (car/hvals @db)))
-
-(defn- index [params]
-  (h/html5
-   [:head
-    (h/include-css "/css/mapbox.css")
-    "<!--[if lt IE 8]>"
-    (h/include-css "/css/mapbox.ie.css")
-    "<![endif]-->"
-    (h/include-css "/css/generic.css")]
-   [:body
-    (h/include-css "/css/MarkerCluster.css")
-    (h/include-css "/css/MarkerCluster.Default.css")
-    (h/include-js "/js/ArrayLikeIsArray.js")
-    (h/include-js "/js/mapbox.js")
-    "<!--[if lt IE 8]>"
-    (h/include-css "/css/MarkerCluster.Default.ie.css")
-    "<![endif]-->"
-    (h/include-js "/js/leaflet.markercluster.js")
-    "<div id=\"map\"></div>"
-    (h/include-js "/js/main.js")]))
-
-;; FIXME remote req from admin?
 (defroutes app-routes 
   (GET "/" {params :params} (index params))
   (POST "/" {params :params} (index params))
-  (GET "/backend" req (if-let [identity (friend/identity req)] (backend) "Doh!"))
+  (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
+  (POST "/backend" {params :params} (backend params))
   (POST "/process" {params :params} (process params))
   (GET "/login" [] (login-form))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))

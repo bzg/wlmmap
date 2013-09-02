@@ -1,7 +1,9 @@
-* TODO store correct infos in the rd db
-* TODO allow to delete/reset a hset from backend
-* TODO move testblade to index
-* TODO handle lang parameter
+* NEXT Test out in the wild
+* DONE Basic form
+* DONE handle lang parameter
+* DONE store correct infos in the rd db
+* DONE allow to delete/reset a hset from backend
+* DONE move testblade to index
 * DONE http://s.trokes.org/dribnet/6386795
 * DONE use shoreleave to remote-get redis entries
 * DONE use blade as leaflet wrapper
