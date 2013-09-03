@@ -140,7 +140,10 @@
       (reset! db0 listdb))))
 
 (defremote get-markers []
-  (apply concat (map #(wcar* (car/hvals %)) @db)))
+  (apply concat (map #(wcar* (car/hkeys %)) @db)))
+
+(defremote get-marker [id]
+  (first (map #(wcar* (car/hget % id)) @db)))
 
 (defremote get-center []
   (wcar* (car/hget (str "s" (first @db)) "rep")))
@@ -265,6 +268,7 @@
                        (when (not (= "" art)) (str arl "<br/>"))
                        (when (not (= "" reg)) src))]
           (wcar* (car/hset db (:id m) (list (list (:lat m) (:lon m)) all))))))
+    ;; (car/set (str db "0") (:id m)))))))
     (let [all (wcar* (car/hvals rset))
           allni (wcar* (car/hvals (str rset "ni")))
           size (count all)

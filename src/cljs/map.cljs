@@ -3,7 +3,8 @@
             [blade :refer [L]]
             [cljs.core.async :refer [chan <! >! timeout]]
             [shoreleave.remotes.http-rpc :refer [remote-callback]])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [shoreleave.remotes.macros :as macros]))
 
 (blade/bootstrap)
 
@@ -19,15 +20,17 @@
 (let [ch (chan)]
   (go (while true
         (let [a (<! ch)]
-          (let [lat (first (first a))
-                lng (last (first a))
-                title (last a)
-                icon ((get-in L [:mapbox :marker :icon])
-                      {:marker-symbol "" :marker-color "0044FF"})
-                marker (-> L (.marker (L/LatLng. lat lng)
-                                      {:icon icon}))]
+          (macros/rpc
+           (get-marker a) [p]
+           (let [lat (first (first p))
+                 lng (last (first p))
+                 title (last p)
+                 icon ((get-in L [:mapbox :marker :icon])
+                       {:marker-symbol "" :marker-color "0044FF"})
+                 marker (-> L (.marker (L/LatLng. lat lng)
+                                       {:icon icon}))]
             (.bindPopup marker title)
-            (.addLayer markers marker)))))
+            (.addLayer markers marker))))))
   (remote-callback :get-markers []
                    #(go (doseq [a %]
                           (<! (timeout 1))
