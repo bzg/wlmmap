@@ -123,67 +123,51 @@
 
 (def toolserver-url "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000")
 
-(def db (atom '("frfr")))
-(def db0 (atom '("frfr")))
-
 (def db-options
   (sort (map #(str (first (val %)) "/" (last (val %))) lang-pairs)))
 
-(defremote set-db0 [lang]
-  (let [listdb
-        (remove nil?
-                (map #(when (= lang (last (val %)))
-                        (str (first (val %)) (last (val %))))
-                     lang-pairs))]
-    (if (empty? listdb)
-      (reset! db0 '("frfr"))
-      (reset! db0 listdb))))
+(defremote get-lang-list [lang]
+  (remove nil?
+          (map #(when (= lang (last (val %)))
+                  (str (first (val %)) (last (val %))))
+               lang-pairs)))
 
-(defremote get-markers []
-  (apply concat (map #(wcar* (car/hkeys %)) @db)))
+(defremote get-markers [db]
+  (apply concat (map #(wcar* (car/hkeys %)) db)))
 
-(defremote get-marker [id]
-  (first (map #(wcar* (car/hget % id)) @db)))
+(defremote get-marker [id db]
+  (first (map #(wcar* (car/hget % id)) db)))
 
-(defremote get-center []
-  (wcar* (car/hget (str "s" (first @db)) "rep")))
+(defremote get-center [db]
+  (wcar* (car/hget (str "s" (first db)) "rep")))
 
-(defn- index [params]
-  (do
-   (if (:db params)
-     (reset! db (list (clojure.string/replace (:db params) #"/" "")))
-     (reset! db @db0))
-   (when (= "false" (:wi params))
-     (reset! db (map #(str % "ni") @db)))
-   (h/html5
-    [:head
-     (h/include-css "/css/mapbox.css")
-     "<!--[if lt IE 8]>"
-     (h/include-css "/css/mapbox.ie.css")
-     "<![endif]-->"
-     (h/include-css "/css/generic.css")]
-    [:body
-     (h/include-css "/css/MarkerCluster.css")
-     (h/include-css "/css/MarkerCluster.Default.css")
-     (h/include-js "/js/ArrayLikeIsArray.js")
-     (h/include-js "/js/mapbox.js")
-     "<!--[if lt IE 8]>"
-     (h/include-css "/css/MarkerCluster.Default.ie.css")
-     "<![endif]-->"
-     (h/include-js "/js/leaflet.markercluster.js")
-     "<div id=\"map\"></div>"
-     [:div {:class "corner"}
-      [:form
-       [:span
-        "<p>Country/Language: "
-        (f/drop-down "db" db-options)
-        "</p>"
-        "<p>"
-        "With images: "
-        (f/check-box "wi")
-        "</p>"
-        [:input {:type "submit" :value "Go"}]]]]
-     (h/include-js "/js/main.js")])))
+(defn- index []
+  (h/html5
+   [:head
+    (h/include-css "/css/mapbox.css")
+    "<!--[if lt IE 8]>"
+    (h/include-css "/css/mapbox.ie.css")
+    "<![endif]-->"
+    (h/include-css "/css/generic.css")]
+   [:body
+    (h/include-css "/css/MarkerCluster.css")
+    (h/include-css "/css/MarkerCluster.Default.css")
+    (h/include-js "/js/ArrayLikeIsArray.js")
+    (h/include-js "/js/mapbox.js")
+    "<!--[if lt IE 8]>"
+    (h/include-css "/css/MarkerCluster.Default.ie.css")
+    "<![endif]-->"
+    (h/include-js "/js/leaflet.markercluster.js")
+    "<div id=\"map\"></div>"
+    [:div {:class "corner"}
+     [:form
+      [:span
+       "<p>Country/Language</p>"
+       (f/drop-down {:id "db"} "db" db-options)
+       "<p>"
+       (e/link-to {:id "go"} "#" "Add monuments")
+       "</p>"]]]
+    (h/include-js "/js/main.js")]))
 
 (defn- backend
   "interface to select which lang/country to store"
@@ -195,7 +179,6 @@
     [:table {:style "width: 100%;"}
      [:tr
       [:td {:style "width: 200px;"} "#"]
-      [:td {:style "width: 200px;"} "# (w/ pic)"]
       [:td {:style "width: 300px;"} "rep (im)"]
       [:td {:style "width: 100px;"} "Country"]
       [:td {:style "width: 100px;"} "Lang"]
@@ -203,23 +186,21 @@
       [:td {:style "width: 200px;"} "Continue from"]
       [:td {:style "width: 100px;"} "Add more"]
       [:td {:style "width: 100px;"} "Delete"]]
-     (doall
-      (if (not (= "" (:del params)))
-        (wcar* (car/del (:del params) (str "s" (:del params)) (str (:del params) "ni"))))
-      (map
-       #(let [fval (first (val %))
-              lval (last (val %))
-              col (odd? (key %))
-              stats (str "s" fval lval)
-              rep (str (wcar* (car/hget stats "rep")))
-              cont (wcar* (car/hget stats "continue"))
-              updt (wcar* (car/hget stats "updated"))
-              size (wcar* (car/hget (str "s" fval lval) "size"))
-              sizeni (wcar* (car/hget (str "s" fval lval) "sizeni"))]
-          [:tr {:style (str "background-color: " (if col "white" "white"))}
-           [:form {:method "POST" :action "/process"}
+     (do
+       (if (not (= "" (:del params)))
+         (wcar* (car/del (:del params) (str "s" (:del params)))))
+       (map
+        #(let [fval (first (val %))
+               lval (last (val %))
+               col (odd? (key %))
+               stats (str "s" fval lval)
+               rep (str (wcar* (car/hget stats "rep")))
+               cont (wcar* (car/hget stats "continue"))
+               updt (wcar* (car/hget stats "updated"))
+               size (wcar* (car/hget (str "s" fval lval) "size"))]
+           [:tr {:style (str "background-color: " (if col "white" "white"))}
+            [:form {:method "POST" :action "/process"}
             [:td {:style "width: 100px;"} size]
-            [:td {:style "width: 100px;"} sizeni]
             [:td {:style "width: 100px;"} rep]
             [:td {:style "width: 100px;"} fval
              [:input {:type "hidden" :name "country" :value fval}]]
@@ -246,12 +227,11 @@
         rset (str cntry srlang)
         res (json/read-str (slurp req) :key-fn keyword)
         next (or (:srcontinue (:continue res)) "")]
-    (doseq [m (:monuments res)]
+    (doseq [[m cnt] (map list (:monuments res) (range))]
       (when (and (not (nil? (:lat m)))
                  (not (nil? (:lon m)))
                  (not (or (nil? (:name m)) (= "" (:name m)))))
         (let [reg (:registrant_url m)
-              db (if (= "" (:image m)) (str rset "ni") rset)
               id (:id m)
               nam (cleanup-name (:name m))
               imc (:image m)
@@ -267,23 +247,15 @@
                        (when (not (= "" imc)) (str ilk "<br/>"))
                        (when (not (= "" art)) (str arl "<br/>"))
                        (when (not (= "" reg)) src))]
-          (wcar* (car/hset db (:id m) (list (list (:lat m) (:lon m)) all))))))
-    ;; (car/set (str db "0") (:id m)))))))
+          (wcar* (car/hset rset cnt (list (list (:lat m) (:lon m)) (= "" imc) all))))))
     (let [all (wcar* (car/hvals rset))
-          allni (wcar* (car/hvals (str rset "ni")))
           size (count all)
-          sizeni (count allni)
           rep (first all)
-          repni (first allni)
           llat (first (first rep))
-          llon (last (first rep))
-          llatni (first (first repni))
-          llonni (last (first repni))]
+          llon (last (first rep))]
       (wcar* (car/hmset (str "s" rset)
                         "rep" (list llat llon)
-                        "repni" (list llatni llonni)
                         "size" size
-                        "sizeni" sizeni
                         "updated" (java.util.Date.)
                         "continue" next))
       (h/html5
@@ -327,8 +299,7 @@
         [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]]]))
 
 (defroutes app-routes 
-  (GET "/" {params :params} (index params))
-  (POST "/" {params :params} (index params))
+  (GET "/" [] (index))
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   (POST "/backend" {params :params} (backend params))
   (POST "/process" {params :params} (process params))

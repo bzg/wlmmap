@@ -13,29 +13,48 @@
 
 (def markers (L/MarkerClusterGroup.))
 
+(declare setdb addmarkers)
+
+(macros/rpc (get-lang-list (.-language js/navigator)) [p] (def db0 p))
+
 (defn setmap []
+  (do (setdb) (addmarkers db0)))
+
+(defn setdb0 [ldb]
+  (do (def db0 (list ldb))
+      (addmarkers db0)))
+
+(defn setdb []
+  (let [db (.getElementById js/document "db")
+        yo (.getElementById js/document "go")]
+    (set! (.-onclick yo)
+          #(setdb0 (clojure.string/replace
+                    (.-value db) #"/" "")))))
+
+(defn addmarkers [dbb]
   (let [ch (chan)]
-    (remote-callback :set-db0 [(.-language js/navigator)] nil)
     (go (while true
           (let [a (<! ch)]
             (macros/rpc
-             (get-marker a) [p]
+             (get-marker a dbb) [p]
              (let [lat (first (first p))
                    lng (last (first p))
+                   img (nth p 1)
                    title (last p)
                    icon ((get-in L [:mapbox :marker :icon])
-                         {:marker-symbol "" :marker-color "0044FF"})
+                         {:marker-symbol ""
+                          :marker-color (if img "FF0000" "0044FF")})
                    marker (-> L (.marker (L/LatLng. lat lng)
                                          {:icon icon}))]
                (.bindPopup marker title)
                (.addLayer markers marker))))))
-    (remote-callback :get-markers []
+    (remote-callback :get-markers [dbb]
                      #(go (doseq [a %]
                             (<! (timeout 1))
                             (>! ch a))))
     (.addLayer mymap markers)
     (remote-callback
-     :get-center []
+     :get-center [dbb]
      #(.setView mymap (vector (first %) (last %)) 5))))
 
 ;; initialize the HTML page in unobtrusive way
