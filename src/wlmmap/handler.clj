@@ -149,7 +149,7 @@
   (wcar* (car/hget (str "s" (first @db)) "rep")))
 
 (defn- index [params]
-  (dorun
+  (do
    (if (:db params)
      (reset! db (list (clojure.string/replace (:db params) #"/" "")))
      (reset! db @db0))
