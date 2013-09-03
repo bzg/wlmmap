@@ -11,9 +11,9 @@
 (def mymap (-> L .-mapbox (.map "map" "examples.map-uci7ul8p")
                (.setView [45 3.215] 5)))
 
-(def markers (L/MarkerClusterGroup.))
-
 (declare setdb addmarkers)
+
+(def layers ())
 
 (macros/rpc (get-lang-list (.-language js/navigator)) [p] (def db0 p))
 
@@ -24,15 +24,23 @@
   (do (def db0 (list ldb))
       (addmarkers db0)))
 
+(defn removelastlayer []
+  (do (.removeLayer mymap (last layers))
+      (set! layers (butlast layers))))
+
 (defn setdb []
   (let [db (.getElementById js/document "db")
         yo (.getElementById js/document "go")]
     (set! (.-onclick yo)
-          #(setdb0 (clojure.string/replace
-                    (.-value db) #"/" "")))))
+          #(do (setdb0 (clojure.string/replace
+                        (.-value db) #"/" ""))
+               (removelastlayer))
+               )))
 
 (defn addmarkers [dbb]
-  (let [ch (chan)]
+  (let [ch (chan)
+        markers (L/MarkerClusterGroup.)]
+    (set! layers (conj layers markers))
     (go (while true
           (let [a (<! ch)]
             (macros/rpc
