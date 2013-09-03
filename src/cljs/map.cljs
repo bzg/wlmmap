@@ -8,36 +8,35 @@
 
 (blade/bootstrap)
 
-(def lang (.-language js/navigator))
-
-(remote-callback :set-db0 [lang] nil)
-
 (def mymap (-> L .-mapbox (.map "map" "examples.map-uci7ul8p")
                (.setView [45 3.215] 5)))
 
 (def markers (L/MarkerClusterGroup.))
 
-(let [ch (chan)]
-  (go (while true
-        (let [a (<! ch)]
-          (macros/rpc
-           (get-marker a) [p]
-           (let [lat (first (first p))
-                 lng (last (first p))
-                 title (last p)
-                 icon ((get-in L [:mapbox :marker :icon])
-                       {:marker-symbol "" :marker-color "0044FF"})
-                 marker (-> L (.marker (L/LatLng. lat lng)
-                                       {:icon icon}))]
-            (.bindPopup marker title)
-            (.addLayer markers marker))))))
-  (remote-callback :get-markers []
-                   #(go (doseq [a %]
-                          (<! (timeout 1))
-                          (>! ch a)))))
+(defn setmap []
+  (let [ch (chan)]
+    (remote-callback :set-db0 [(.-language js/navigator)] nil)
+    (go (while true
+          (let [a (<! ch)]
+            (macros/rpc
+             (get-marker a) [p]
+             (let [lat (first (first p))
+                   lng (last (first p))
+                   title (last p)
+                   icon ((get-in L [:mapbox :marker :icon])
+                         {:marker-symbol "" :marker-color "0044FF"})
+                   marker (-> L (.marker (L/LatLng. lat lng)
+                                         {:icon icon}))]
+               (.bindPopup marker title)
+               (.addLayer markers marker))))))
+    (remote-callback :get-markers []
+                     #(go (doseq [a %]
+                            (<! (timeout 1))
+                            (>! ch a))))
+    (.addLayer mymap markers)
+    (remote-callback
+     :get-center []
+     #(.setView mymap (vector (first %) (last %)) 5))))
 
-(.addLayer mymap markers)
-
-(remote-callback
- :get-center []
- #(.setView mymap (vector (first %) (last %)) 5))
+;; initialize the HTML page in unobtrusive way
+(set! (.-onload js/window) setmap)

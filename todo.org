@@ -1,4 +1,6 @@
+* NEXT Fix bug about setting lang and handling parameters
 * NEXT Test out in the wild
+* NEXT Store hset with raw numbers as keywords
 * DONE Basic form
 * DONE handle lang parameter
 * DONE store correct infos in the rd db
