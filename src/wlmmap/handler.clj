@@ -149,41 +149,41 @@
   (wcar* (car/hget (str "s" (first @db)) "rep")))
 
 (defn- index [params]
-  (h/html5
-   (do
-     (if (:db params)
-       (reset! db (list (clojure.string/replace (:db params) #"/" "")))
-       (reset! db @db0))
-     (when (= "false" (:wi params))
-       (reset! db (map #(str % "ni") @db))))
-   [:head
-    (h/include-css "/css/mapbox.css")
-    "<!--[if lt IE 8]>"
-    (h/include-css "/css/mapbox.ie.css")
-    "<![endif]-->"
-    (h/include-css "/css/generic.css")]
-   [:body
-    (h/include-css "/css/MarkerCluster.css")
-    (h/include-css "/css/MarkerCluster.Default.css")
-    (h/include-js "/js/ArrayLikeIsArray.js")
-    (h/include-js "/js/mapbox.js")
-    "<!--[if lt IE 8]>"
-    (h/include-css "/css/MarkerCluster.Default.ie.css")
-    "<![endif]-->"
-    (h/include-js "/js/leaflet.markercluster.js")
-    "<div id=\"map\"></div>"
-    [:div {:class "corner"}
-     [:form
-      [:span
-       "<p>Country/Language: "
-       (f/drop-down "db" db-options)
-       "</p>"
-       "<p>"
-       "With images: "
-       (f/check-box "wi")
-       "</p>"
-       [:input {:type "submit" :value "Go"}]]]]
-    (h/include-js "/js/main.js")]))
+  (dorun
+   (if (:db params)
+     (reset! db (list (clojure.string/replace (:db params) #"/" "")))
+     (reset! db @db0))
+   (when (= "false" (:wi params))
+     (reset! db (map #(str % "ni") @db)))
+   (h/html5
+    [:head
+     (h/include-css "/css/mapbox.css")
+     "<!--[if lt IE 8]>"
+     (h/include-css "/css/mapbox.ie.css")
+     "<![endif]-->"
+     (h/include-css "/css/generic.css")]
+    [:body
+     (h/include-css "/css/MarkerCluster.css")
+     (h/include-css "/css/MarkerCluster.Default.css")
+     (h/include-js "/js/ArrayLikeIsArray.js")
+     (h/include-js "/js/mapbox.js")
+     "<!--[if lt IE 8]>"
+     (h/include-css "/css/MarkerCluster.Default.ie.css")
+     "<![endif]-->"
+     (h/include-js "/js/leaflet.markercluster.js")
+     "<div id=\"map\"></div>"
+     [:div {:class "corner"}
+      [:form
+       [:span
+        "<p>Country/Language: "
+        (f/drop-down "db" db-options)
+        "</p>"
+        "<p>"
+        "With images: "
+        (f/check-box "wi")
+        "</p>"
+        [:input {:type "submit" :value "Go"}]]]]
+     (h/include-js "/js/main.js")])))
 
 (defn- backend
   "interface to select which lang/country to store"
