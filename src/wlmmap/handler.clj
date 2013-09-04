@@ -232,7 +232,9 @@
         rset (str cntry srlang)
         res (json/read-str (slurp req) :key-fn keyword)
         next (or (:srcontinue (:continue res)) "")]
-    (doseq [[m cnt] (map list (:monuments res) (range))]
+    (doseq [[m cnt] (map list
+                         (:monuments res)
+                         (range (inc (count (wcar* (car/hvals rset)))) 100000))]
       (when (and (not (nil? (:lat m)))
                  (not (nil? (:lon m)))
                  (not (or (nil? (:name m)) (= "" (:name m)))))
@@ -269,8 +271,8 @@
         [:h1 (format "Store monuments for country %s and lang %s into \"%s\""
                      (:country params) (:srlang params) rset)]
         [:form {:method "POST" :action "/process" :class "main"}
-         [:h2 "Continuated from"] (:cont params)
-         [:h2 "Done"] size
+         [:h2 (str "Continuated from " (:cont params))]
+         [:h2 (str "Done so far: " size)]
          [:h2 "Next"]
          [:input {:type "hidden" :name "country" :value (:country params)}]
          [:input {:type "hidden" :name "srlang" :value (:srlang params)}]
