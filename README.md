@@ -1,6 +1,6 @@
 # What is Wlmmap
 
-Wlmmap is the web application behind http://wlmmap.herokuapp.com
+Wlmmap is the web application behind http://www.panoramap.org
 
 # License
 
