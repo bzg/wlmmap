@@ -18,7 +18,9 @@
 (macros/rpc (get-lang-list (.-language js/navigator)) [p] (def db0 p))
 
 (defn setmap []
-  (do (setdb) (addmarkers db0)))
+  (do (setdb)
+      ;; (addmarkers db0)
+      ))
 
 (defn setdb0 [ldb]
   (do (def db0 (list ldb))
@@ -34,8 +36,8 @@
     (set! (.-onclick yo)
           #(do (setdb0 (clojure.string/replace
                         (.-value db) #"/" ""))
-               (removelastlayer))
-               )))
+               ; (removelastlayer)
+               ))))
 
 (defn addmarkers [dbb]
   (let [ch (chan)
@@ -58,7 +60,7 @@
                (.addLayer markers marker))))))
     (remote-callback :get-markers [dbb]
                      #(go (doseq [a %]
-                            (<! (timeout 1))
+                            (<! (timeout 5))
                             (>! ch a))))
     (.addLayer mymap markers)
     (remote-callback
