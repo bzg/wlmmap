@@ -165,7 +165,12 @@
        "<p>Country/Language</p>"
        (f/drop-down {:id "db"} "db" db-options)
        "<p>"
-       (e/link-to {:id "go"} "#" "Add monuments")
+       "# monuments"
+       "</p><p>"
+       (f/text-field {:id "max" :size 12 :style "text-align: right;"} "max" 0)
+       "<p>"
+       (e/link-to {:id "go"} "#" "Show")
+       (e/link-to {:id "stop" :class "stop"} "#" "Stop")
        "</p>"]]]
     (h/include-js "/js/main.js")]))
 

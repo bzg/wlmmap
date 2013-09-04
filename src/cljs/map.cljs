@@ -11,9 +11,15 @@
 (def mymap (-> L .-mapbox (.map "map" "examples.map-uci7ul8p")
                (.setView [45 3.215] 5)))
 
+(def maxi 0)
+(def stop "stop")
 (declare setdb addmarkers)
 
 (def layers ())
+
+(defn removelastlayer []
+  (do (.removeLayer mymap (last layers))
+      (set! layers (butlast layers))))
 
 (macros/rpc (get-lang-list (.-language js/navigator)) [p] (def db0 p))
 
@@ -22,28 +28,30 @@
       ;; (addmarkers db0)
       ))
 
-(defn setdb0 [ldb]
+(defn setdb0 [ldb mx]
   (do (def db0 (list ldb))
+      (def maxi mx)
       (addmarkers db0)))
-
-(defn removelastlayer []
-  (do (.removeLayer mymap (last layers))
-      (set! layers (butlast layers))))
 
 (defn setdb []
   (let [db (.getElementById js/document "db")
-        yo (.getElementById js/document "go")]
+        mx (.getElementById js/document "max")
+        yo (.getElementById js/document "go")
+        sp (.getElementById js/document "stop")]
     (set! (.-onclick yo)
-          #(do (setdb0 (clojure.string/replace
-                        (.-value db) #"/" ""))
-               ; (removelastlayer)
-               ))))
+          #(do (set! stop "go")
+               (when (not (empty? layers)) (removelastlayer))
+               (setdb0 (clojure.string/replace
+                        (.-value db) #"/" "")
+                       (js/parseInt (.-value mx)))))
+    (set! (.-onclick sp)
+          #(set! stop "stop"))))
 
 (defn addmarkers [dbb]
   (let [ch (chan)
         markers (L/MarkerClusterGroup.)]
     (set! layers (conj layers markers))
-    (go (while true
+    (go (while (not= stop "stop")
           (let [a (<! ch)]
             (macros/rpc
              (get-marker a dbb) [p]
@@ -59,7 +67,7 @@
                (.bindPopup marker title)
                (.addLayer markers marker))))))
     (remote-callback :get-markers [dbb]
-                     #(go (doseq [a %]
+                     #(go (doseq [a (if (= maxi 0) % (take maxi %))]
                             (<! (timeout 1))
                             (>! ch a))))
     (.addLayer mymap markers)

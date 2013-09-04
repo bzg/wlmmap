@@ -26,8 +26,9 @@ form.main {
     position:fixed;
     top:10px;
     right:10px;
-    opacity:.4;
+    opacity:1;
     border-radius:15px;
+    padding:1em;
     padding:1em;
     background: black;
     color: white;
@@ -35,7 +36,7 @@ form.main {
 }
 
 .corner:hover {
-    opacity:.9;
+    opacity:1;
 }
 
 .corner span {
@@ -53,9 +54,16 @@ form.main {
 }
 
 .corner a:hover {
-    background: black;
+    background: #aaa;
     padding: .5em;
-    color: white;
     text-decoration: none;
+}
+
+.corner a.stop {
+    background: red;
+}
+
+.corner a.stop:hover {
+    background: darkred;
 }
 
