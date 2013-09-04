@@ -36,8 +36,8 @@ form.main {
 
 .corner:hover {
     opacity:.9;
-    width:200px;
-    height:200px;
+    /* width:200px; */
+    /* height:200px; */
 }
 
 .corner span {
@@ -54,10 +54,10 @@ form.main {
     text-decoration: none;
 }
 
-.corner a:hover {
-    background: black; 
-    padding: .5em; 
-    color: white;
-    text-decoration: none;
-}
+/* .corner a:hover { */
+/*     background: black;  */
+/*     padding: .5em;  */
+/*     color: white; */
+/*     text-decoration: none; */
+/* } */
 
