@@ -41,7 +41,7 @@ form.main {
 }
 
 .corner span {
-    display:none;
+    display:block;
     }
 .corner:hover span {
     display:block;
