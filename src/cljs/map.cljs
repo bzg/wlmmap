@@ -68,7 +68,7 @@
                (.addLayer markers marker))))))
     (remote-callback :get-markers [dbb]
                      #(go (doseq [a (if (= maxi 0) % (take maxi %))]
-                            (<! (timeout 10))
+                            (<! (timeout 50))
                             (>! ch a))))
     (.addLayer mymap markers)
     (remote-callback
