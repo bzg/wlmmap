@@ -55,10 +55,7 @@
           (let [a (<! ch)]
             (macros/rpc
              (get-marker a dbb) [p]
-             (let [lat (first (first p))
-                   lng (last (first p))
-                   img (nth p 1)
-                   title (last p)
+             (let [[[lat lng] img title] p
                    icon ((get-in L [:mapbox :marker :icon])
                          {:marker-symbol ""
                           :marker-color (if img "FF0000" "0044FF")})
