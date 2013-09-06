@@ -1,4 +1,5 @@
 (ns wlmmap.handler
+  (import '(java.io File))
   (:require [clojure.data.json :as json]
             [clojure.string :as str]
             [cemerick.friend :as friend]
@@ -125,7 +126,33 @@
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
 
 (def db-options
-  (sort (map #(str (first (val %)) "/" (last (val %))) lang-pairs)))
+  (sort (map #(let [[_ [cntry lng]] %] (str cntry " / " lng)) lang-pairs)))
+
+(defremote set-db-options-from-lang [lang]
+  (let [languages-json
+        (json/read-str (slurp (str "/cldr/" lang "/languages.json"))
+                       :key-fn keyword)
+        languages
+        (get-in languages-json
+                [:main (keyword lang) :localeDisplayNames :languages])
+        territories-json
+        (json/read-str (slurp (str "/cldr/" lang "/territories.json"))
+                       :key-fn keyword)
+        countries
+        (get-in territories-json
+                [:main (keyword lang) :localeDisplayNames :territories])]
+    ;; Check if localization is available for the language
+    (when (.exists (str "/cldr/" lang))
+      (set! db-options
+            (sort (map #(let [[_ [cntry lng]] %
+                              cplx (re-seq #"([^-]+)-(.+)" cntry)]
+                          (if cplx
+                            (let [[_ bare suffix] (first cplx)]
+                              (str ((keyword (clojure.string/upper-case bare)) countries)
+                                   " (" suffix ") / " ((keyword lng) languages)))
+                            (str ((keyword (clojure.string/upper-case cntry)) countries)
+                                 " / " ((keyword lng) languages))))
+                       lang-pairs))))))
 
 (defremote get-lang-list [lang]
   (remove nil?
