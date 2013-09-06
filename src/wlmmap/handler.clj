@@ -121,7 +121,8 @@
 73, ["ad" 	   "ca"]
 })
 
-(def toolserver-url "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000")
+(def toolserver-url
+  "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
 
 (def db-options
   (sort (map #(str (first (val %)) "/" (last (val %))) lang-pairs)))
