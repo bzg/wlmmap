@@ -201,7 +201,7 @@
                rep (str (wcar* (car/hget stats "rep")))
                cont (wcar* (car/hget stats "continue"))
                updt (wcar* (car/hget stats "updated"))
-               size (wcar* (car/hget (str "s" fval lval) "size"))]
+               size (wcar* (car/hget stats "size"))]
            [:tr {:style (str "background-color: white")}
             [:form {:method "POST" :action "/process"}
             [:td {:style "width: 100px;"} size]
