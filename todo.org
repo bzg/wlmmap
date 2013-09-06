@@ -1,6 +1,15 @@
-* NEXT Fix bug about setting lang and handling parameters
-* NEXT Test out in the wild
-* NEXT Store hset with raw numbers as keywords
+* NEXT Use props (see [[http://tools.wmflabs.org/heritage/api/api.php][API doc]]) to only get relevant info while creating the database
+* NEXT Use Clojure destructuring in map.cljs (instead of ugly first/last)
+* NEXT Implements localized named (from a local hardcoded CLDR excerpt)
+* NEXT Test storing lat lon and fn to return depending on bbox
+** Use lat long to filter returned results through bbox
+* TODO Merge useless doublons from gb-/en
+* TODO Filter by with-image (use mapbox add-on for this)
+* TODO Add mapbox minimap
+* TODO Test getting results directly from toolserver
+* DONE Fix bug about setting lang and handling parameters
+* DONE Test out in the wild
+* DONE Store hset with raw numbers as keywords
 * DONE Basic form
 * DONE handle lang parameter
 * DONE store correct infos in the rd db
