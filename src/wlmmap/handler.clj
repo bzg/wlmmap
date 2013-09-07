@@ -123,9 +123,18 @@
 
 (def toolserver-url
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
+(def toolserver-bbox-format-url
+  "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
+(def wm-thumbnail-format-url
+  "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=%s&width=250\" />")
+(def wm-img-format-url
+  "<a href=\"http://commons.wikimedia.org/wiki/File:%s\" target=\"_blank\">%s</a>")
+(def wp-link-format-url
+  "<a href=\"http://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>")
+(def src-format-url
+  "Source: <a href=\"%s\" target=\"_blank\">%s</a>")
 
-(defremote get-markers-toolserver [bounds-string]
-  ;; FIXME Need to factor out the function below
+(defn- make-monuments-list [monuments]
   (map #(when (and (not (nil? (:lat %)))
                    (not (nil? (:lon %)))
                    (not (or (nil? (:name %)) (= "" (:name %)))))
@@ -135,22 +144,28 @@
                 imc (:image %)
                 img (codec/url-encode imc)
                 lng (:lang %)
-                emb (str "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" img "&width=250\" />")
-                ilk (str "<a href=\"http://commons.wikimedia.org/wiki/File:" img "\" target=\"_blank\">" emb "</a>")
+                emb (format wm-thumbnail-format-url img)
+                ilk (format wm-img-format-url img emb)
                 art (:monument_article %)
-                lnk "<a href=\"http://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>"
-                arl (format lnk lng (codec/url-encode art) art)
-                src (format "Source: <a href=\"%s\" target=\"_blank\">%s</a>" reg id)
+                arl (format wp-link-format-url lng (codec/url-encode art) art)
+                src (format src-format-url reg id)
                 all (str "<h3>" nam "</h3>"
                          (when (not (= "" imc)) (str ilk "<br/>"))
                          (when (not (= "" art)) (str arl "<br/>"))
                          (when (not (= "" reg)) src))]
             (list %2 (list (:lat %) (:lon %)) (= "" imc) all)))
-       (:monuments
-        ;; FIXME factor out the loooong string
-        (json/read-str (slurp (format "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s" bounds-string)) :key-fn keyword))
+       monuments
        (range 100000)))
-  
+
+(defn- make-monuments-list-from-toolserver [map-bounds-string]
+  (make-monuments-list
+   (:monuments
+    (json/read-str (slurp (format toolserver-bbox-format-url map-bounds-string))
+                   :key-fn keyword))))
+
+(defremote get-markers-toolserver [map-bounds-string]
+  (make-monuments-list-from-toolserver map-bounds-string))
+
 (def db-options
   (atom
    (sort
@@ -169,9 +184,9 @@
         countries
         (get-in territories-json
                 [:main (keyword lang) :localeDisplayNames :territories])]
-    ;; Check if localization is available for the language
+    ;; FIXME: First check if localization is available for the browser language?
     (swap! db-options
-           (fn [_] 
+           (fn [_]
              (sort (map #(let [[_ [cntry lng]] %
                                cplx (re-seq #"([^-]+)-(.+)" cntry)]
                            (if cplx
@@ -293,29 +308,8 @@
         rset (str cntry srlang)
         res (json/read-str (slurp req) :key-fn keyword)
         next (or (:srcontinue (:continue res)) "")]
-    (doseq [[m cnt] (map list
-                         (:monuments res)
-                         (range (inc (count (wcar* (car/hvals rset)))) 100000))]
-      (when (and (not (nil? (:lat m)))
-                 (not (nil? (:lon m)))
-                 (not (or (nil? (:name m)) (= "" (:name m)))))
-        (let [reg (:registrant_url m)
-              id (:id m)
-              nam (cleanup-name (:name m))
-              imc (:image m)
-              img (codec/url-encode imc)
-              lng (:lang m)
-              emb (str "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" img "&width=250\" />")
-              ilk (str "<a href=\"http://commons.wikimedia.org/wiki/File:" img "\" target=\"_blank\">" emb "</a>")
-              art (:monument_article m)
-              lnk "<a href=\"http://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>"
-              arl (format lnk lng (codec/url-encode art) art)
-              src (format "Source: <a href=\"%s\" target=\"_blank\">%s</a>" reg id)
-              all (str "<h3>" nam "</h3>"
-                       (when (not (= "" imc)) (str ilk "<br/>"))
-                       (when (not (= "" art)) (str arl "<br/>"))
-                       (when (not (= "" reg)) src))]
-          (wcar* (car/hset rset cnt (list (list (:lat m) (:lon m)) (= "" imc) all))))))
+    (map #(wcar* (car/hset rset (first %) (rest %)))
+         (make-monuments-list (:monuments res)))
     (let [all (wcar* (car/hvals rset))
           size (count all)
           rep (first all)
