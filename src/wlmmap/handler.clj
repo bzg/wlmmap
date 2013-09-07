@@ -1,5 +1,5 @@
 (ns wlmmap.handler
-  (import '(java.io File))
+  (:import (java.io File))
   (:require [clojure.data.json :as json]
             [clojure.string :as str]
             [cemerick.friend :as friend]
