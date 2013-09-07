@@ -13,6 +13,11 @@
 
 (def maxi 0)
 (def stop "stop")
+(def lang (.-language js/navigator))
+
+;; FIXME: is [p] needed here?
+(macros/rpc (set-db-options-from-lang lang) [p] p)
+
 (declare setdb addmarkers)
 
 (def layers ())
@@ -21,7 +26,7 @@
   (do (.removeLayer mymap (last layers))
       (set! layers (butlast layers))))
 
-(macros/rpc (get-lang-list (.-language js/navigator)) [p] (def db0 p))
+(macros/rpc (get-lang-list lang) [p] (def db0 p))
 
 (defn setmap []
   (do (setdb)
