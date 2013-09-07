@@ -13,6 +13,12 @@
 (def mymap (-> L .-mapbox (.map "map" "examples.map-uci7ul8p")
                (.setView [45 3.215] 5)))
 
+;; (def coord (new L.LatLngBounds))
+;; (def coord (new L.LatLngBounds))
+;; (def coord2 (.toBBoxString coord))
+
+(def mapbounds-tostring (.toBBoxString (.getBounds mymap)))
+
 (def maxi 0)
 (def stop "stop")
 (def lang (.-language js/navigator))
@@ -39,19 +45,26 @@
       (def maxi mx)
       (addmarkers db0)))
 
+(defn show-here [bounds-string]
+  (remote-callback :get-markers-toolserver [bounds-string]
+                   #(js/alert (pr-str (first %)))))
+
 (defn setdb []
   (let [db (dom/by-id "db")
         mx (dom/by-id "max")
         yo (dom/by-id "go")
         sp (dom/by-id "stop")]
     (set! (.-onclick yo)
-          #(do (set! stop "go")
-               (when (not (empty? layers)) (removelastlayer))
-               (setdb0 (clojure.string/replace
-                        (.-value db) #"/" "")
-                       (js/parseInt (.-value mx)))))
+          #(do 
+             (set! stop "go")
+             (when (not (empty? layers)) (removelastlayer))
+             (setdb0 (clojure.string/replace
+                      (.-value db) #"/" "")
+                     (js/parseInt (.-value mx)))))
     (set! (.-onclick sp)
-          #(set! stop "stop"))))
+          ;; #(set! stop "stop")
+          #(show-here (.toBBoxString (.getBounds mymap)))
+          )))
 
 (defn addmarkers [dbb]
   (let [ch (chan)
