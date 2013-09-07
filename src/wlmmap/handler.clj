@@ -126,7 +126,7 @@
 (def toolserver-bbox-format-url
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
 (def wm-thumbnail-format-url
-  "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=%s&width=250\" />")
+  "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%%3AFilePath&file=%s&width=250\" />")
 (def wm-img-format-url
   "<a href=\"http://commons.wikimedia.org/wiki/File:%s\" target=\"_blank\">%s</a>")
 (def wp-link-format-url
@@ -135,25 +135,26 @@
   "Source: <a href=\"%s\" target=\"_blank\">%s</a>")
 
 (defn- make-monuments-list [monuments]
-  (map #(when (and (not (nil? (:lat %)))
-                   (not (nil? (:lon %)))
-                   (not (or (nil? (:name %)) (= "" (:name %)))))
-          (let [reg (:registrant_url %)
-                id (:id %)
-                nam (cleanup-name (:name %))
-                imc (:image %)
+  (map (fn [m cnt]
+         (when (and (not (nil? (:lat m)))
+                    (not (nil? (:lon m)))
+                    (not (or (nil? (:name m)) (= "" (:name m)))))
+          (let [reg (:registrant_url m)
+                id (:id m)
+                nam (cleanup-name (:name m))
+                imc (:image m)
                 img (codec/url-encode imc)
-                lng (:lang %)
+                lng (:lang m)
                 emb (format wm-thumbnail-format-url img)
                 ilk (format wm-img-format-url img emb)
-                art (:monument_article %)
+                art (:monument_article m)
                 arl (format wp-link-format-url lng (codec/url-encode art) art)
                 src (format src-format-url reg id)
                 all (str "<h3>" nam "</h3>"
                          (when (not (= "" imc)) (str ilk "<br/>"))
                          (when (not (= "" art)) (str arl "<br/>"))
                          (when (not (= "" reg)) src))]
-            (list %2 (list (:lat %) (:lon %)) (= "" imc) all)))
+            (list cnt (list (:lat m) (:lon m)) (= "" imc) all))))
        monuments
        (range 100000)))
 
@@ -308,8 +309,8 @@
         rset (str cntry srlang)
         res (json/read-str (slurp req) :key-fn keyword)
         next (or (:srcontinue (:continue res)) "")]
-    (map #(wcar* (car/hset rset (first %) (rest %)))
-         (make-monuments-list (:monuments res)))
+    (doseq [l (make-monuments-list (:monuments res))]
+      (wcar* (car/hset rset (first l) (rest l))))
     (let [all (wcar* (car/hvals rset))
           size (count all)
           rep (first all)
