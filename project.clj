@@ -10,6 +10,7 @@
    [org.clojure/clojurescript "0.0-1859"]
    [org.clojure/core.async "0.1.0-SNAPSHOT"]
    [lib-noir "0.6.8"]
+   [domina "1.0.2-SNAPSHOT"]
    [com.cemerick/friend "0.1.5"]
    [net.drib/blade "0.1.0"]
    [compojure "1.1.5"]
