@@ -2,7 +2,9 @@
   (:require [mrhyde.extend-js]
             [blade :refer [L]]
             [cljs.core.async :refer [chan <! >! timeout]]
-            [shoreleave.remotes.http-rpc :refer [remote-callback]])
+            [shoreleave.remotes.http-rpc :refer [remote-callback]]
+            [domina :as dom]
+            [domina.events :as ev])
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [shoreleave.remotes.macros :as macros]))
 
@@ -15,9 +17,6 @@
 (def stop "stop")
 (def lang (.-language js/navigator))
 
-;; FIXME: is [p] needed here?
-(macros/rpc (set-db-options-from-lang lang) [p] p)
-
 (declare setdb addmarkers)
 
 (def layers ())
@@ -26,12 +25,14 @@
   (do (.removeLayer mymap (last layers))
       (set! layers (butlast layers))))
 
-(macros/rpc (get-lang-list lang) [p] (def db0 p))
-
 (defn setmap []
-  (do (setdb)
-      ;; (addmarkers db0)
-      ))
+  (do
+    (macros/rpc (set-db-options-from-lang lang) [p] p)
+    (macros/rpc (get-lang-list lang) [p] (def db0 p))
+    ;; FIXME: is [p] needed here?
+    (setdb)
+    ;; (addmarkers db0)
+    ))
 
 (defn setdb0 [ldb mx]
   (do (def db0 (list ldb))
@@ -39,10 +40,10 @@
       (addmarkers db0)))
 
 (defn setdb []
-  (let [db (.getElementById js/document "db")
-        mx (.getElementById js/document "max")
-        yo (.getElementById js/document "go")
-        sp (.getElementById js/document "stop")]
+  (let [db (dom/by-id "db")
+        mx (dom/by-id "max")
+        yo (dom/by-id "go")
+        sp (dom/by-id "stop")]
     (set! (.-onclick yo)
           #(do (set! stop "go")
                (when (not (empty? layers)) (removelastlayer))
@@ -54,10 +55,11 @@
 
 (defn addmarkers [dbb]
   (let [ch (chan)
-        markers (L/MarkerClusterGroup.)]
+        markers (L/MarkerClusterGroup.)
+        per (dom/by-id "per")]
     (set! layers (conj layers markers))
     (go (while (not= stop "stop")
-          (let [a (<! ch)]
+          (let [[a cnt perc] (<! ch)]
             (macros/rpc
              (get-marker a dbb) [p]
              (let [[[lat lng] img title] p
@@ -66,12 +68,15 @@
                           :marker-color (if img "FF0000" "0044FF")})
                    marker (-> L (.marker (L/LatLng. lat lng)
                                          {:icon icon}))]
+               (set! (.-value per) (Math/round perc))
                (.bindPopup marker title)
                (.addLayer markers marker))))))
     (remote-callback :get-markers [dbb]
-                     #(go (doseq [a (if (= maxi 0) % (take maxi %))]
-                            (<! (timeout 50))
-                            (>! ch a))))
+                     #(go (doseq [[a cnt] (map list
+                                               (if (= maxi 0) % (take maxi %))
+                                               (range 100000))]
+                            (<! (timeout 1))
+                            (>! ch [a cnt (/ (* cnt 100) (count %))]))))
     (.addLayer mymap markers)
     (remote-callback
      :get-center [dbb]
