@@ -195,10 +195,14 @@
       [:span
        "<p>Country/Language</p>"
        (f/drop-down {:id "db"} "db" @db-options)
+       "<br/>"
+       (f/text-field {:id "per" :size 12 :style "text-align: right;"}
+                     "per" 0)
        "<p>"
        "# monuments"
        "</p><p>"
-       (f/text-field {:id "max" :size 12 :style "text-align: right;"} "max" 0)
+       (f/text-field {:id "max" :size 12 :style "text-align: right;"}
+                     "max" 0)
        "<p>"
        (e/link-to {:id "go"} "#" "Show")
        (e/link-to {:id "stop" :class "stop"} "#" "Stop")
