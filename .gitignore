@@ -13,3 +13,5 @@ docs/
 gh-pages/
 README.org
 .nrepl-port
+ChangeLog
+.gitignore
