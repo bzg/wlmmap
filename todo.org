@@ -7,6 +7,7 @@
 * TODO Filter by with-image (use mapbox add-on for this)
 * TODO Add mapbox minimap
 * TODO Test getting results directly from toolserver
+* NEXT Remove max
 * DONE Fix bug about setting lang and handling parameters
 * DONE Test out in the wild
 * DONE Store hset with raw numbers as keywords
