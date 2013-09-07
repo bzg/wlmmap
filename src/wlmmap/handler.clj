@@ -124,6 +124,33 @@
 (def toolserver-url
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
 
+(defremote get-markers-toolserver [bounds-string]
+  ;; FIXME Need to factor out the function below
+  (map #(when (and (not (nil? (:lat %)))
+                   (not (nil? (:lon %)))
+                   (not (or (nil? (:name %)) (= "" (:name %)))))
+          (let [reg (:registrant_url %)
+                id (:id %)
+                nam (cleanup-name (:name %))
+                imc (:image %)
+                img (codec/url-encode imc)
+                lng (:lang %)
+                emb (str "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%3AFilePath&file=" img "&width=250\" />")
+                ilk (str "<a href=\"http://commons.wikimedia.org/wiki/File:" img "\" target=\"_blank\">" emb "</a>")
+                art (:monument_article %)
+                lnk "<a href=\"http://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>"
+                arl (format lnk lng (codec/url-encode art) art)
+                src (format "Source: <a href=\"%s\" target=\"_blank\">%s</a>" reg id)
+                all (str "<h3>" nam "</h3>"
+                         (when (not (= "" imc)) (str ilk "<br/>"))
+                         (when (not (= "" art)) (str arl "<br/>"))
+                         (when (not (= "" reg)) src))]
+            (list %2 (list (:lat %) (:lon %)) (= "" imc) all)))
+       (:monuments
+        ;; FIXME factor out the loooong string
+        (json/read-str (slurp (format "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s" bounds-string)) :key-fn keyword))
+       (range 100000)))
+  
 (def db-options
   (atom
    (sort
