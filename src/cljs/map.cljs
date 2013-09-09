@@ -11,33 +11,31 @@
 (blade/bootstrap)
 
 (def mymap (-> L .-mapbox (.map "map" "examples.map-9ijuk24y")
-               (.setView [45 3.215] 5)))
-
-(def setmap
-  "Initialize lang and set the map's defaults.")
+               (.setView [45 3.215] 6)))
 
 (def stopper "stop")
 
 (declare maybe-show-here removelastlayer)
-(.on mymap "movestart"
+(.on mymap "dragstart" #(set! stopper "stop"))
+
+(.on mymap "zoomstart"
      #(do (set! stopper "stop")
           (removelastlayer)))
      
-(.on mymap "moveend"
+(.on mymap "dragend"
+     #(do (set! stopper "go")
+          (removelastlayer)
+          (maybe-show-here)))
+
+(.on mymap "zoomend"
      #(do (set! stopper "go")
           (maybe-show-here)))
 
-;; (.on mymap "zoomend" #(js/alert (.getZoom mymap)))
-
-;; (remote-callback :test-file-exists [] #(js/alert %))
-;; (defn test (js/alert "test!"))
-;; (def coord (new L.LatLngBounds))
-;; (def coord (new L.LatLngBounds))
-;; (def coord2 (.toBBoxString coord))
-;; (def mapbounds-tostring (.toBBoxString (.getBounds mymap)))
-
-(def maxi 0)
 (def lang (.-language js/navigator))
+
+;; (macros/rpc (set-db-options-from-lang lang) [p] (js/alert (pr-str p)))
+
+(remote-callback :set-db-options-from-lang [lang] #(%))
 
 (declare setdb addmarkers)
 
@@ -49,37 +47,16 @@
         (set! layers (butlast layers)))))
 
 (defn setmap []
-  (do
-    (macros/rpc (set-db-options-from-lang lang) [])
-    (macros/rpc (get-lang-list lang) [p] (def db0 p))
-    ;; FIXME: is [p] needed here?
-    (setdb)
-    ;; (addmarkers db0)
-    ))
-
-(defn setdb0 [ldb mx]
-  (do (def db0 (list ldb))
-      (def maxi mx)
-      (addmarkers db0)))
-
-;; (defn show-here [bounds-string]
-;;   (remote-callback :get-markers-toolserver [bounds-string]
-;;                    #(js/alert (pr-str (first %)))))
-
-;; (def bs "")
-
-(defn setdb []
   (let [db (dom/by-id "db")
-        mx (dom/by-id "max")
-        yo (dom/by-id "go")]
+        yo (dom/by-id "sm")
+        per (dom/by-id "per")]
+    (set! (.-value per) "0")
     (set! (.-onclick yo)
-          #(do 
-             (when (not (empty? layers)) (removelastlayer))
-             (setdb0 (clojure.string/replace
-                      (.-value db) #"/" "")
-                     (js/parseInt (.-value mx)))))))
+          #(do (when (not (empty? layers)) (removelastlayer))
+               (addmarkers (clojure.string/replace (.-value db) #"/" ""))))))
 
-(defn addmarkers [dbb map-bounds-string]
+(defn addmarkers [dbb]
+  (set! stopper "go")
   (let [ch (chan)
         markers (L/MarkerClusterGroup.)
         per (dom/by-id "per")]
@@ -87,7 +64,7 @@
     (go (while (not= stopper "stop")
           (let [[a cnt perc] (<! ch)]
             (macros/rpc
-             (get-marker a dbb map-bounds-string) [p]
+             (get-marker dbb a) [p]
              (let [[[lat lng] img title] p
                    icon ((get-in L [:mapbox :marker :icon])
                          {:marker-symbol ""
@@ -97,39 +74,44 @@
                (set! (.-value per) (Math/round perc))
                (.bindPopup marker title)
                (.addLayer markers marker))))))
-    (remote-callback :get-markers [dbb map-bounds-string]
-                     #(go (doseq [[a cnt] (map list
-                                               (if (= maxi 0) % (take maxi %))
-                                               (range 100000))]
+    (remote-callback :get-markers [dbb]
+                     ;; #(go (doseq [[a cnt] (map list % (range 100000))]
+                     ;;        (<! (timeout 1))
+                     ;;        (>! ch [a cnt (/ (* cnt 100) (count %))]))))
+                     #(go (doseq [[a cnt] (map list % (range 100000))]
                             (<! (timeout 1))
                             (>! ch [a cnt (/ (* cnt 100) (count %))]))))
+
     (.addLayer mymap markers)
-    (remote-callback
-     :get-center [dbb]
-     #(.setView mymap (vector (first %) (last %)) 5))))
+    ;; (remote-callback
+    ;;  :get-center [dbb]
+    ;;  #(.setView mymap (vector (first %) (last %)) 5))
+    ))
 
 (defn addmarkers-toolserver [map-bounds-string]
   (let [ch (chan)
-        markers (L/MarkerClusterGroup.)]
+        markers (L/MarkerClusterGroup. {:disableClusteringAtZoom 10})
+        per (dom/by-id "per")]
+    (js/alert "go!!!")
     (set! layers (conj layers markers))
     (go (while (not= stopper "stop")
-          (let [[_ [lat lng] img title] (<! ch)
+          (let [[[_ [lat lng] img title] cnt perc] (<! ch)
                 icon ((get-in L [:mapbox :marker :icon])
                       {:marker-symbol ""
                        :marker-color (if img "FF0000" "0044FF")})
                 marker (-> L (.marker (L/LatLng. lat lng) {:icon icon}))]
+            (set! (.-value per) (Math/round perc))
             (.bindPopup marker title)
             (.addLayer markers marker))))
     (remote-callback :get-markers-toolserver [map-bounds-string]
-                      #(go (doseq [a %]
-                             (<! (timeout 1))
-                             (>! ch a))))
+                     #(go (doseq [[a cnt] (map list % (range 100000))]
+                            (<! (timeout 1))
+                            (>! ch [a cnt (/ (* cnt 100) (count %))]))))
     (.addLayer mymap markers)))
 
 (defn maybe-show-here []
   (let [z (.getZoom mymap)]
     (when (> z 10)
-      (js/alert "Zoom ok: showing monuments")
       (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))
 
 ;; initialize the HTML page in unobtrusive way
