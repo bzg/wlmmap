@@ -1,31 +1,103 @@
-* NEXT Use props (see [[http://tools.wmflabs.org/heritage/api/api.php][API doc]]) to only get relevant info while creating the database
-* NEXT Use Clojure destructuring in map.cljs (instead of ugly first/last)
-* NEXT Implements localized named (from a local hardcoded CLDR excerpt)
-* NEXT Test storing lat lon and fn to return depending on bbox
-** Use lat long to filter returned results through bbox
-* TODO Merge useless doublons from gb-/en
-* TODO Filter by with-image (use mapbox add-on for this)
-* TODO Add mapbox minimap
-* TODO Test getting results directly from toolserver
+
+- Afficher tous les markers d'un pays
+- movestart : def stopper "stop" et effacer markers
+- moveend : def stopper "go"
+  si zoom < afficher markers
+- afficher pourcentage pour tous affichage de markers
+
+* NEXT Fix bug 5001 max entries when feeding the db
 * NEXT Remove max
-* DONE Fix bug about setting lang and handling parameters
-* DONE Test out in the wild
-* DONE Store hset with raw numbers as keywords
-* DONE Basic form
-* DONE handle lang parameter
-* DONE store correct infos in the rd db
-* DONE allow to delete/reset a hset from backend
-* DONE move testblade to index
-* DONE http://s.trokes.org/dribnet/6386795
-* DONE use shoreleave to remote-get redis entries
-* DONE use blade as leaflet wrapper
-* DONE test core.async to generate markers
-* DONE use mapbox.js instead of cloudmap
-* DONE Admin interface to feed redis server
-* DONE Admin login with in-memory login creds
-* DONE slurp json data from toolserver
+* WAIT Merge useless doublons from gb-/en
+* WAIT Filter by with-image (use mapbox add-on for this)
+* TODO Add mapbox minimap
+* Archive							 :ARCHIVE:
+** DONE Test getting results directly from toolserver
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Use props (see [[http://tools.wmflabs.org/heritage/api/api.php][API doc]]) to only get relevant info while creating the database
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Fix bug about setting lang and handling parameters
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Test out in the wild
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Store hset with raw numbers as keywords
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Basic form
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE handle lang parameter
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE store correct infos in the rd db
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE allow to delete/reset a hset from backend
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE move testblade to index
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE http://s.trokes.org/dribnet/6386795
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE use shoreleave to remote-get redis entries
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE use blade as leaflet wrapper
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE test core.async to generate markers
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE use mapbox.js instead of cloudmap
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Admin interface to feed redis server
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Admin login with in-memory login creds
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE slurp json data from toolserver
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
 
 http://stackoverflow.com/questions/15660066/how-to-read-json-file-into-clojure-defrecord-to-be-searched-later
 http://toolserver.org/~erfgoed/api/api.php?action=search&srcountry=fr&srlang=fr&limit=3&srwithimage=0&format=json
 
 
+** CANCELED Test storing lat lon and fn to return depending on bbox
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+*** Use lat long to filter returned results through bbox
+** DONE Implements localized named (from a local hardcoded CLDR excerpt)
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Use Clojure destructuring in map.cljs (instead of ugly first/last)
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:

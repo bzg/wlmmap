@@ -123,6 +123,7 @@
 
 (def toolserver-url
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
+  ;; "http://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
 (def toolserver-bbox-format-url
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
 (def wm-thumbnail-format-url
@@ -167,10 +168,12 @@
 (defremote get-markers-toolserver [map-bounds-string]
   (make-monuments-list-from-toolserver map-bounds-string))
 
-(def db-options
-  (atom
-   (sort
-    (map #(let [[_ [cntry lng]] %] (str cntry " / " lng)) lang-pairs))))
+;; (def db-options
+;;   (sort (map #(let [[_ [cntry lng]] %] (str cntry " / " lng)) lang-pairs)))
+
+;; (defremote test-file-exists []
+;;   (if (.exists (clojure.java.io/file "resources/public/cldr/fr/languagess.json"))
+;;     "ok" "notok"))
 
 (defremote set-db-options-from-lang [lang]
   (let [languages-json
@@ -186,19 +189,18 @@
         (get-in territories-json
                 [:main (keyword lang) :localeDisplayNames :territories])]
     ;; FIXME: First check if localization is available for the browser language?
-    (swap! db-options
-           (fn [_]
-             (sort (map #(let [[_ [cntry lng]] %
-                               cplx (re-seq #"([^-]+)-(.+)" cntry)]
-                           (if cplx
-                             (let [[_ bare suffix] (first cplx)]
-                               (vector (str ((keyword (clojure.string/upper-case bare)) countries)
-                                            " (" suffix ") / " ((keyword lng) languages))
-                                       (str cntry "/" lng)))
-                             (vector (str ((keyword (clojure.string/upper-case cntry)) countries)
-                                          " / " ((keyword lng) languages))
-                                     (str cntry "/" lng))))
-                        lang-pairs))))))
+    (def db-options
+      (sort (map #(let [[_ [cntry lng]] %
+                        cplx (re-seq #"([^-]+)-(.+)" cntry)]
+                    (if cplx
+                      (let [[_ bare suffix] (first cplx)]
+                        (vector (str ((keyword (clojure.string/upper-case bare)) countries)
+                                     " (" suffix ") / " ((keyword lng) languages))
+                                (str cntry "/" lng)))
+                      (vector (str ((keyword (clojure.string/upper-case cntry)) countries)
+                                   " / " ((keyword lng) languages))
+                              (str cntry "/" lng))))
+                 lang-pairs)))))
 
 (defremote get-lang-list [lang]
   (remove nil?
@@ -206,11 +208,15 @@
                   (str (first (val %)) (last (val %))))
                lang-pairs)))
 
-(defremote get-markers [db]
-  (apply concat (map #(wcar* (car/hkeys %)) db)))
+(defremote get-markers [db bs]
+  (if (or (nil? bs) (= "" bs))
+    (apply concat (map #(wcar* (car/hkeys %)) db))
+    (make-monuments-list-from-toolserver bs)))
 
-(defremote get-marker [id db]
-  (first (map #(wcar* (car/hget % id)) db)))
+(defremote get-marker [id db bs]
+  (if (or (nil? bs) (= "" bs))
+    (first (map #(wcar* (car/hget % id)) db))
+    id))
 
 (defremote get-center [db]
   (wcar* (car/hget (str "s" (first db)) "rep")))
@@ -237,7 +243,7 @@
      [:form
       [:span
        "<p>Country/Language</p>"
-       (f/drop-down {:id "db"} "db" @db-options)
+       (f/drop-down {:id "db"} "db" db-options)
        "<br/>"
        (f/text-field {:id "per" :size 12 :style "text-align: right;"}
                      "per" 0)
@@ -248,7 +254,6 @@
                      "max" 0)
        "<p>"
        (e/link-to {:id "go"} "#" "Show")
-       (e/link-to {:id "stop" :class "stop"} "#" "Stop")
        "</p>"]]]
     (h/include-js "/js/main.js")]))
 
