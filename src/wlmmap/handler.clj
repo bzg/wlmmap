@@ -8,6 +8,7 @@
             [taoensso.carmine :as car]
             [ring.util.codec :as codec]
             [ring.util.response :as resp]
+            [noir.session :as session]
             [noir.util.middleware :as middleware]
             [compojure.core :as compojure :refer (GET POST defroutes)]
             (compojure [handler :as handler]
@@ -56,13 +57,13 @@
    8, ["be-wal" 	   "fr"]
    9, ["be-wal" 	   "nl"]
    10, ["bo" 	   "es"]
-   11, ["by" 	   "be-x-old"]
+   ;; 11, ["by" 	   "be-x-old"]
    12, ["ca" 	   "en"]
    13, ["ca" 	   "fr"]
    14, ["ch" 	   "fr"]
-   15, ["ch-old" 	   "de"]
-   16, ["ch-old" 	   "en"]
-   17, ["ch-old" 	   "it"]
+   ;; 15, ["ch-old" 	   "de"]
+   ;; 16, ["ch-old" 	   "en"]
+   ;; 17, ["ch-old" 	   "it"]
    18, ["cl" 	   "es"]
    19, ["co" 	   "es"]
    20, ["cz" 	   "cs"]
@@ -226,6 +227,7 @@
     (h/include-css "/css/MarkerCluster.css")
     (h/include-css "/css/MarkerCluster.Default.css")
     (h/include-js "/js/ArrayLikeIsArray.js")
+    (h/include-js "/js/gg.js")
     (h/include-js "/js/mapbox.js")
 
     "<!--[if lt IE 8]>"
@@ -254,6 +256,7 @@
   (h/html5
    [:head (h/include-css "/css/admin.css")]
    [:body
+    (h/include-js "/js/gg.js")
     [:h1 "Select the lang and the country of monuments to store"]
     [:table {:style "width: 100%;"}
      [:tr
@@ -350,6 +353,7 @@
   (h/html5
    [:head (h/include-css "/css/about.css")]
    [:body
+    (h/include-js "/js/gg.js")
     [:h1 "About"]
     [:p "This map has been developed during "
      (e/link-to {:target "_blank"} "http://www.wikilovesmonuments.org/" "Wiki Loves Monuments 2013.")]
