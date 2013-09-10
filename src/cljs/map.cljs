@@ -55,6 +55,7 @@
      #(.setView mymap (vector (first %) (last %)) 5))))
 
 (defn addmarkers-toolserver [map-bounds-string]
+  (set! stopper "go")
   (let [ch (chan)
         markers (L/MarkerClusterGroup.
                  {:disableClusteringAtZoom (+ zoomlimit 3)})
@@ -71,7 +72,7 @@
             (.addLayer markers marker))))
     (remote-callback :get-markers-toolserver [map-bounds-string]
                      #(go (doseq [[a cnt] (map list % (range 100000))]
-                            (<! (timeout 20))
+                            (<! (timeout 5))
                             (>! ch [a cnt (/ (* cnt 100) (count %))]))))
     (.addLayer mymap markers)))
 
@@ -95,6 +96,7 @@
     (set! (.-onclick ex) #(.reload js/location))
     (set! (.-onclick show)
           #(do
+             (set! stopper "stop")
              (when (not (empty? layers)) (removelastlayer))
              (addmarkers (clojure.string/replace (.-value db) #" ?/ ?" ""))))
     (set! (.-onclick stop) #(set! stopper "stop"))
@@ -108,7 +110,6 @@
                      " times to be more comfortable.")))
              (do (set! stopper "stop")
                  (when (not (empty? layers)) (removelastlayer))
-                 (set! stopper "go")
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
 
 
