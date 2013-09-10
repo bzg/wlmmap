@@ -106,8 +106,9 @@
                      "It takes a while if the focus is too large.\n\n"
                      "Zoom " (- zoomlimit z)
                      " times to be more comfortable.")))
-             (do (set! stopper "go")
+             (do (set! stopper "stop")
                  (when (not (empty? layers)) (removelastlayer))
+                 (set! stopper "go")
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
 
 
