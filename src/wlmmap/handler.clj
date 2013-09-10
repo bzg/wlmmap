@@ -224,10 +224,21 @@
     "<![endif]-->"
     (h/include-css "/css/generic.css")]
    [:body
+    "
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-2658857-12', 'panoramap.org');
+  ga('send', 'pageview');
+
+</script>
+"
     (h/include-css "/css/MarkerCluster.css")
     (h/include-css "/css/MarkerCluster.Default.css")
     (h/include-js "/js/ArrayLikeIsArray.js")
-    (h/include-js "/js/gg.js")
     (h/include-js "/js/mapbox.js")
 
     "<!--[if lt IE 8]>"
@@ -256,7 +267,18 @@
   (h/html5
    [:head (h/include-css "/css/admin.css")]
    [:body
-    (h/include-js "/js/gg.js")
+    "
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-2658857-12', 'panoramap.org');
+  ga('send', 'pageview');
+
+</script>
+"
     [:h1 "Select the lang and the country of monuments to store"]
     [:table {:style "width: 100%;"}
      [:tr
@@ -353,7 +375,16 @@
   (h/html5
    [:head (h/include-css "/css/about.css")]
    [:body
-    (h/include-js "/js/gg.js")
+"
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-2658857-12', 'panoramap.org');
+  ga('send', 'pageview');
+</script>
+"
     [:h1 "About"]
     [:p "This map has been developed during "
      (e/link-to {:target "_blank"} "http://www.wikilovesmonuments.org/" "Wiki Loves Monuments 2013.")]
