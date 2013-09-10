@@ -46,7 +46,7 @@
                (.addLayer markers marker))))))
     (remote-callback :get-markers [dbb]
                      #(go (doseq [[a cnt] (map list % (range 100000))]
-                            (<! (timeout 20))
+                            (<! (timeout 5))
                             (>! ch [a cnt (/ (* cnt 100) (count %))]))))
 
     (.addLayer mymap markers)
@@ -71,7 +71,7 @@
             (.addLayer markers marker))))
     (remote-callback :get-markers-toolserver [map-bounds-string]
                      #(go (doseq [[a cnt] (map list % (range 100000))]
-                            (<! (timeout 20))
+                            (<! (timeout 5))
                             (>! ch [a cnt (/ (* cnt 100) (count %))]))))
     (.addLayer mymap markers)))
 
@@ -110,7 +110,6 @@
                  (when (not (empty? layers)) (removelastlayer))
                  (set! stopper "go")
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
-
 
 ;; initialize the HTML page in unobtrusive way
 (set! (.-onload js/window) setmap)
