@@ -26,17 +26,21 @@ form.main {
     position:fixed;
     top:10px;
     right:10px;
-    opacity:1;
+    opacity:.9;
     border-radius:15px;
-    padding:1em;
     padding:1em;
     background: black;
     color: white;
     z-index: 1000;
 }
 
+.corner p {
+    margin-top: .7em;
+    padding: 0;
+}
+
 .corner:hover {
-    opacity:1;
+    opacity:.9;
 }
 
 .corner span {
@@ -47,15 +51,15 @@ form.main {
 }
 
 .corner a {
-    padding: .5em; 
-    background: #eee; 
-    color: black;
+    background: black;
+    color: #eee;
+    padding: .4em;
     text-decoration: none;
 }
 
 .corner a:hover {
-    background: #aaa;
-    padding: .5em;
+    background: #ccc;
+    color: black;
     text-decoration: none;
 }
 

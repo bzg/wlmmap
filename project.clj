@@ -11,7 +11,6 @@
    ;; [org.clojure/clojurescript "0.0-1877"]
    [org.clojure/core.async "0.1.0-SNAPSHOT"]
    [lib-noir "0.6.8"]
-   [domina "1.0.2-SNAPSHOT"]
    [com.cemerick/friend "0.1.5"]
    [net.drib/blade "0.1.0"]
    [compojure "1.1.5"]
@@ -19,7 +18,8 @@
    [org.clojure/data.json "0.2.2"]
    [ring-server "0.2.8"]
    [shoreleave/shoreleave-remote-ring "0.3.0"]
-   [shoreleave/shoreleave-remote "0.3.0"]]
+   [shoreleave/shoreleave-remote "0.3.0"]
+   [domina "1.0.2-SNAPSHOT"]]
   :ring
   {:handler wlmmap.handler/war-handler,
    :init wlmmap.handler/init,

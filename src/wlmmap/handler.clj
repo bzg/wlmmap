@@ -119,12 +119,14 @@
    71, ["ve" 	   "es"]
    72, ["za" 	   "en"]
    73, ["ad" 	   "ca"]
+   74, ["hu" 	   "hu"]
    })
 
 (def toolserver-url
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
-;; "http://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
+;;  "http://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
 (def toolserver-bbox-format-url
+;;  "http://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
   "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
 (def wm-thumbnail-format-url
   "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%%3AFilePath&file=%s&width=250\" />")
@@ -135,7 +137,7 @@
 (def src-format-url
   "Source: <a href=\"%s\" target=\"_blank\">%s</a>")
 
-(defn- make-monuments-list [monuments]
+(defn- make-monuments-list [monuments start]
   (map (fn [m cnt]
          (when (and (not (nil? (:lat m)))
                     (not (nil? (:lon m)))
@@ -157,13 +159,14 @@
                           (when (not (= "" reg)) src))]
              (list cnt (list (:lat m) (:lon m)) (= "" imc) all))))
        monuments
-       (range 100000)))
+       (range (if (empty? start) 0 (Integer/parseInt start)) 100000)))
 
 (defn- make-monuments-list-from-toolserver [map-bounds-string]
   (make-monuments-list
    (:monuments
     (json/read-str (slurp (format toolserver-bbox-format-url map-bounds-string))
-                   :key-fn keyword))))
+                   :key-fn keyword))
+   "0"))
 
 (defremote get-markers-toolserver [map-bounds-string]
   (make-monuments-list-from-toolserver map-bounds-string))
@@ -189,17 +192,18 @@
         (get-in territories-json
                 [:main (keyword lang) :localeDisplayNames :territories])]
     (swap! db-options
-           (fn [_] (sort (map #(let [[_ [cntry lng]] %
-                                    cplx (re-seq #"([^-]+)-(.+)" cntry)]
-                                (if cplx
-                                  (let [[_ bare suffix] (first cplx)]
-                                    (vector (str ((keyword (clojure.string/upper-case bare)) countries)
-                                                 " (" suffix ") / " ((keyword lng) languages))
-                                            (str cntry "/" lng)))
-                                  (vector (str ((keyword (clojure.string/upper-case cntry)) countries)
-                                               " / " ((keyword lng) languages))
-                                          (str cntry "/" lng))))
-                             lang-pairs))))))
+           (fn [_]
+             (sort (map #(let [[_ [cntry lng]] %
+                               cplx (re-seq #"([^-]+)-(.+)" cntry)]
+                           (if cplx
+                             (let [[_ bare suffix] (first cplx)]
+                               (vector (str ((keyword (clojure.string/upper-case bare)) countries)
+                                            " (" suffix ") / " ((keyword lng) languages))
+                                       (str cntry "/" lng)))
+                             (vector (str ((keyword (clojure.string/upper-case cntry)) countries)
+                                          " / " ((keyword lng) languages))
+                                     (str cntry "/" lng))))
+                        lang-pairs))))))
 
 (defremote get-markers [db]
   (wcar* (car/hkeys db)))
@@ -223,6 +227,7 @@
     (h/include-css "/css/MarkerCluster.Default.css")
     (h/include-js "/js/ArrayLikeIsArray.js")
     (h/include-js "/js/mapbox.js")
+
     "<!--[if lt IE 8]>"
     (h/include-css "/css/MarkerCluster.Default.ie.css")
     "<![endif]-->"
@@ -230,20 +235,17 @@
     "<div id=\"map\"></div>"
     [:div {:class "corner"}
      [:form
-      [:span
-       "<p>Country/Language</p>"
-       (f/drop-down {:id "db"} "db" @db-options)
-       "<br/>"
-       "<br/>"
-       (e/link-to {:id "sm"} "#" "Show monuments")
-       "<br/>"
-       "<br/>"
-;;       "<span id=\"per\" style=\"color: white;\"></span>"
-       (f/text-field {:id "per" :size 12 :style "text-align: right; background-color: black; border: 0px; color: white;"}
-                     "per" 0)
-       "<p>"
-       ;; (e/link-to {:id "go"} "#" "Show monuments here")
-       "</p>"]]]
+      (f/drop-down {:id "db"} "db" @db-options)
+      [:p {:style "font-size: 90%"}
+       (e/link-to {:id "ex"} "#" (if (= "ad / ca" (first @db-options))
+                                   "-> Translate names" ""))]
+      [:p
+       (e/link-to {:id "sm" :style "color:blue"} "#" "Show")
+       (e/link-to {:id "stop" :style "color: red"} "#" "Stop")
+       (e/link-to {:id "showhere" :style "color:yellow"} "#" "....")]
+      "</p>"
+      [:p (f/text-field {:id "per" :size 12 :style "text-align: right; background-color: black; border: 0px; color: white;"} "per")]
+      [:p (e/link-to {:id "about" :style "font-size:90%;"} "/about" "About")]]]
     (h/include-js "/js/main.js")]))
 
 (defn- backend
@@ -276,7 +278,8 @@
                size (wcar* (car/hget stats "size"))]
            [:tr {:style (str "background-color: white")}
             [:form {:method "POST" :action "/process"}
-             [:td {:style "width: 100px;"} size]
+             [:td {:style "width: 100px;"} size
+              [:input {:type "hidden" :name "size" :value size}]]
              [:td {:style "width: 100px;"} rep]
              [:td {:style "width: 100px;"} fval
               [:input {:type "hidden" :name "country" :value fval}]]
@@ -303,7 +306,7 @@
         rset (str cntry srlang)
         res (json/read-str (slurp req) :key-fn keyword)
         next (or (:srcontinue (:continue res)) "")]
-    (doseq [l (make-monuments-list (:monuments res))]
+    (doseq [l (make-monuments-list (:monuments res) (:size params))]
       (wcar* (car/hset rset (first l) (rest l))))
     (let [all (wcar* (car/hvals rset))
           size (count all)
@@ -322,6 +325,7 @@
                      (:country params) (:srlang params) rset)]
         [:form {:method "POST" :action "/process" :class "main"}
          [:h2 (str "Continuated from " (:cont params))]
+         [:input {:type "hidden" :name "size" :value size}]
          [:h2 (str "Done so far: " size)]
          [:h2 "Next"]
          [:input {:type "hidden" :name "country" :value (:country params)}]
@@ -342,6 +346,27 @@
                  :credential-fn
                  #(creds/bcrypt-credential-fn @admin %))]}))
 
+(defn- about []
+  (h/html5
+   [:head (h/include-css "/css/about.css")]
+   [:body
+    [:h1 "About"]
+    [:p "This map has been developed during "
+     (e/link-to {:target "_blank"} "http://www.wikilovesmonuments.org/" "Wiki Loves Monuments 2013.")]
+    [:p "It allows you to explore cultural heritage treasures of the world."]
+    [:p "<font color=\"blue\">Blue</font> markers are for monuments with a photo."]
+    [:p "<font color=\"red\">Red</font> markers are for monuments without one."]
+    [:p "All the pictures are from "
+     (e/link-to {:target "_blank"} 
+                "https://commons.wikimedia.org"
+                "Wikimedia Commons.")
+     ", available under a free license."]
+    [:p "The code being this website is available from "
+     (e/link-to {:target "_blank"} "https://github.com/bzg/wlmmap" "github.")]
+    [:p "I appreciate feedback and suggestions! "
+     (e/link-to "mailto:bzg@bzg.fr?subject=[panoramap]" "Drop me an email")]
+    [:p "-- " (e/link-to {:target "_blank"} "http://bzg.fr" "bzg")]]))
+
 (defn- login-form []
   (h/html5
    [:head (h/include-css "/css/admin.css")]
@@ -360,6 +385,7 @@
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   (POST "/backend" {params :params} (backend params))
   (POST "/process" {params :params} (process params))
+  (GET "/about" [] (about))
   (GET "/login" [] (login-form))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")

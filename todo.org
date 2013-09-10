@@ -1,12 +1,4 @@
-
-- Afficher tous les markers d'un pays
-- movestart : def stopper "stop" et effacer markers
-- moveend : def stopper "go"
-  si zoom < afficher markers
-- afficher pourcentage pour tous affichage de markers
-
-* NEXT Fix bug 5001 max entries when feeding the db
-* NEXT Remove max
+* WAIT Use addLayers instead of addLayer
 * WAIT Merge useless doublons from gb-/en
 * WAIT Filter by with-image (use mapbox add-on for this)
 * TODO Add mapbox minimap
@@ -100,4 +92,24 @@ http://toolserver.org/~erfgoed/api/api.php?action=search&srcountry=fr&srlang=fr&
 ** DONE Use Clojure destructuring in map.cljs (instead of ugly first/last)
    :PROPERTIES:
    :ARCHIVE_TIME: 2013-09-09 lun. 14:05
+   :END:
+** DONE Display percent when showing from toolserver
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-10 mar. 07:51
+   :END:
+** DONE Remove max
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-10 mar. 12:09
+   :END:
+** DONE Add hu/hu
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-10 mar. 12:12
+   :END:
+** DONE Fix bug 5001 max entries when feeding the db
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-10 mar. 17:45
+   :END:
+** CANCELED Fix localization: don't use a state
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-10 mar. 17:45
    :END:
