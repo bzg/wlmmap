@@ -222,12 +222,12 @@
     "<!--[if lt IE 8]>"
     (h/include-css "/css/mapbox.ie.css")
     "<![endif]-->"
-    (h/include-css "/css/generic.css")]
+    (h/include-css "/css/generic.css")
+    (h/include-js "/js/gg.js")]
    [:body
     (h/include-css "/css/MarkerCluster.css")
     (h/include-css "/css/MarkerCluster.Default.css")
     (h/include-js "/js/ArrayLikeIsArray.js")
-    (h/include-js "/js/gg.js")
     (h/include-js "/js/mapbox.js")
 
     "<!--[if lt IE 8]>"
@@ -254,9 +254,10 @@
   "interface to select which lang/country to store"
   [params]
   (h/html5
-   [:head (h/include-css "/css/admin.css")]
+   [:head
+    (h/include-css "/css/admin.css")
+    (h/include-js "/js/gg.js")]
    [:body
-    (h/include-js "/js/gg.js")
     [:h1 "Select the lang and the country of monuments to store"]
     [:table {:style "width: 100%;"}
      [:tr
@@ -351,9 +352,10 @@
 
 (defn- about []
   (h/html5
-   [:head (h/include-css "/css/about.css")]
+   [:head
+    (h/include-css "/css/about.css")
+    (h/include-js "/js/gg.js")]
    [:body
-    (h/include-js "/js/gg.js")
     [:h1 "About"]
     [:p "This map has been developed during "
      (e/link-to {:target "_blank"} "http://www.wikilovesmonuments.org/" "Wiki Loves Monuments 2013.")]
