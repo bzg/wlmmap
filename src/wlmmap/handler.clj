@@ -358,7 +358,8 @@
    [:body
     [:h1 "About"]
     [:p "This map has been developed during "
-     (e/link-to {:target "_blank"} "http://www.wikilovesmonuments.org/" "Wiki Loves Monuments 2013.")]
+     (e/link-to {:target "_blank"} "http://www.wikilovesmonuments.org/" "Wiki Loves Monuments 2013")
+     "."]
     [:p "It allows you to explore cultural heritage treasures of the world."]
     [:p "<font color=\"blue\">Blue</font> markers are for monuments with a photo."]
     [:p "<font color=\"red\">Red</font> markers are for monuments without one."]
@@ -367,8 +368,8 @@
                 "https://commons.wikimedia.org"
                 "Wikimedia Commons.")
      ", available under a free license."]
-    [:p "The code being this website is available from "
-     (e/link-to {:target "_blank"} "https://github.com/bzg/wlmmap" "github.")]
+    [:p "The code behind this website is available from "
+     (e/link-to {:target "_blank"} "https://github.com/bzg/wlmmap" "github") "."]
     [:p "I appreciate feedback and suggestions! "
      (e/link-to "mailto:bzg@bzg.fr?subject=[panoramap]" "Drop me an email")]
     [:p "-- " (e/link-to {:target "_blank"} "http://bzg.fr" "bzg")]]))
