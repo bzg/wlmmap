@@ -8,7 +8,6 @@
             [taoensso.carmine :as car]
             [ring.util.codec :as codec]
             [ring.util.response :as resp]
-            [noir.session :as session]
             [noir.util.middleware :as middleware]
             [compojure.core :as compojure :refer (GET POST defroutes)]
             (compojure [handler :as handler]
@@ -16,7 +15,44 @@
             [hiccup.page :as h]
             [hiccup.element :as e]
             [hiccup.form :as f]
-            [shoreleave.middleware.rpc :refer [defremote wrap-rpc]]))
+            [shoreleave.middleware.rpc :refer [defremote wrap-rpc]]
+            [taoensso.tower :as tower
+             :refer (with-locale with-tscope t *locale*)]))
+
+(def trad
+  {:dev-mode? true
+   :fallback-locale :en
+   :dictionary
+   {:en {:main {:show "Show"
+                :stop "Stop"
+                :here "Here"
+                :about "About"}
+         :about {:a "About"
+                 :b "This map has been developed during "
+                 :c "It allows you to explore cultural heritage treasures of the world."
+                 :d "Blue markers are for monuments with a photo."
+                 :e "Red markers are for monuments without one."
+                 :f "All the pictures are from "
+                 :g ", available under a free license."
+                 :h "The code behind this website is available from "
+                 :i "I appreciate feedback and suggestions! "
+                 :j "Drop me an email"}}
+    :fr {:main {:show "Afficher"
+                :stop "Stop"
+                :here "Ici"
+                :about "À propos"}
+         :about {
+                 :a "À propos"
+                 :b "Cette carte a été développée pour "
+                 :c "Elle permet d'explorer les monuments historiques du monde entier."
+                 :d "Les points en rouge indiquent des monuments avec photo."
+                 :e "Les points en bleu indiquent des monuments <b>sans</b> photo."
+                 :f "Toutes les images viennent de "
+                 :g ", disponibles sous licence libre."
+                 :h "Le code derrière ce site web est disponible depuis "
+                 :i "J'apprécie les remarques, critiques et suggestions! "
+                 :j "Envoyez-moi un e-mail"
+                 }}}})
 
 (defn init 
   "Called when the application starts."
@@ -175,36 +211,32 @@
 (def db-options
   (atom (sort (map #(let [[_ [cntry lng]] %] (str cntry " / " lng)) lang-pairs))))
 
-;; (defremote test-file-exists []
-;;   (if (.exists (clojure.java.io/file "resources/public/cldr/fr/languages.json"))
-;;     "ok" "notok"))
-
-(defremote set-db-options-from-lang [lang]
-  (let [languages-json
-        (json/read-str (slurp (str "resources/public/cldr/" lang "/languages.json"))
-                       :key-fn keyword)
-        languages
-        (get-in languages-json
-                [:main (keyword lang) :localeDisplayNames :languages])
-        territories-json
-        (json/read-str (slurp (str "resources/public/cldr/" lang "/territories.json"))
-                       :key-fn keyword)
-        countries
-        (get-in territories-json
-                [:main (keyword lang) :localeDisplayNames :territories])]
-    (swap! db-options
-           (fn [_]
-             (sort (map #(let [[_ [cntry lng]] %
-                               cplx (re-seq #"([^-]+)-(.+)" cntry)]
-                           (if cplx
-                             (let [[_ bare suffix] (first cplx)]
-                               (vector (str ((keyword (clojure.string/upper-case bare)) countries)
-                                            " (" suffix ") / " ((keyword lng) languages))
-                                       (str cntry "/" lng)))
-                             (vector (str ((keyword (clojure.string/upper-case cntry)) countries)
-                                          " / " ((keyword lng) languages))
-                                     (str cntry "/" lng))))
-                        lang-pairs))))))
+(defn- db-options-localized [lang]
+  (if (.exists (clojure.java.io/file (str "resources/public/cldr/" lang "/languages.json")))
+    (let [languages-json
+          (json/read-str (slurp (str "resources/public/cldr/" lang "/languages.json"))
+                         :key-fn keyword)
+          languages
+          (get-in languages-json
+                  [:main (keyword lang) :localeDisplayNames :languages])
+          territories-json
+          (json/read-str (slurp (str "resources/public/cldr/" lang "/territories.json"))
+                         :key-fn keyword)
+          countries
+          (get-in territories-json
+                  [:main (keyword lang) :localeDisplayNames :territories])]
+      (sort (map #(let [[_ [cntry lng]] %
+                        cplx (re-seq #"([^-]+)-(.+)" cntry)]
+                    (if cplx
+                      (let [[_ bare suffix] (first cplx)]
+                        (vector (str ((keyword (clojure.string/upper-case bare)) countries)
+                                     " (" suffix ") / " ((keyword lng) languages))
+                                (str cntry "/" lng)))
+                      (vector (str ((keyword (clojure.string/upper-case cntry)) countries)
+                                   " / " ((keyword lng) languages))
+                              (str cntry "/" lng))))
+                 lang-pairs)))
+    @db-options))
 
 (defremote get-markers [db]
   (wcar* (car/hkeys db)))
@@ -215,40 +247,40 @@
 (defremote get-center [db]
   (wcar* (car/hget (str "s" db) "rep")))
 
-(defn- index []
-  (h/html5
-   [:head
-    (h/include-css "/css/mapbox.css")
-    "<!--[if lt IE 8]>"
-    (h/include-css "/css/mapbox.ie.css")
-    "<![endif]-->"
-    (h/include-css "/css/generic.css")
-    (h/include-js "/js/gg.js")]
-   [:body
-    (h/include-css "/css/MarkerCluster.css")
-    (h/include-css "/css/MarkerCluster.Default.css")
-    (h/include-js "/js/ArrayLikeIsArray.js")
-    (h/include-js "/js/mapbox.js")
-
-    "<!--[if lt IE 8]>"
-    (h/include-css "/css/MarkerCluster.Default.ie.css")
-    "<![endif]-->"
-    (h/include-js "/js/leaflet.markercluster.js")
-    "<div id=\"map\"></div>"
-    [:div {:class "corner"}
-     [:form
-      (f/drop-down {:id "db"} "db" @db-options)
-      [:p {:style "font-size: 90%"}
-       (e/link-to {:id "ex"} "#" (if (= "ad / ca" (first @db-options))
-                                   "-> Translate names" ""))]
-      [:p
-       (e/link-to {:id "sm" :style "color:blue"} "#" "Show")
-       (e/link-to {:id "stop" :style "color: red"} "#" "Stop")
-       (e/link-to {:id "showhere" :style "color:yellow"} "#" "....")]
-      "</p>"
-      [:p (f/text-field {:id "per" :size 12 :style "text-align: right; background-color: black; border: 0px; color: white;"} "per")]
-      [:p (e/link-to {:id "about" :style "font-size:90%;"} "/about" "About")]]]
-    (h/include-js "/js/main.js")]))
+(defn- index [lang]
+  (let [lng (or lang "en")]
+    (h/html5
+     [:head
+      (h/include-css "/css/mapbox.css")
+      "<!--[if lt IE 8]>"
+      (h/include-css "/css/mapbox.ie.css")
+      "<![endif]-->"
+      (h/include-css "/css/generic.css")
+      (h/include-js "/js/gg.js")]
+     [:body
+      (h/include-css "/css/MarkerCluster.css")
+      (h/include-css "/css/MarkerCluster.Default.css")
+      (h/include-js "/js/ArrayLikeIsArray.js")
+      (h/include-js "/js/mapbox.js")
+      "<!--[if lt IE 8]>"
+      (h/include-css "/css/MarkerCluster.Default.ie.css")
+      "<![endif]-->"
+      (h/include-js "/js/leaflet.markercluster.js")
+      "<div id=\"map\"></div>"
+      [:div {:class "corner"}
+       [:form
+        (f/drop-down {:id "db"} "db" (db-options-localized lng))
+        [:p
+         (e/link-to {:id "sm" :style "color:blue"} "#"
+                    (tower/t (keyword lng) trad :main/show))
+         (e/link-to {:id "stop" :style "color: red"} "#"
+                    (tower/t (keyword lng) trad :main/stop))
+         (e/link-to {:id "showhere" :style "color:yellow"} "#" "....")]
+        "</p>"
+        [:p (f/text-field {:id "per" :size 12 :style "text-align: right; background-color: black; border: 0px; color: white;"} "per")]
+        [:p (e/link-to {:id "about" :style "font-size:90%;"} "/about"
+                       (tower/t (keyword lng) trad :main/about))]]]
+      (h/include-js "/js/main.js")])))
 
 (defn- backend
   "interface to select which lang/country to store"
@@ -350,28 +382,32 @@
                  :credential-fn
                  #(creds/bcrypt-credential-fn @admin %))]}))
 
-(defn- about []
+(defn- about [& msg]
   (h/html5
    [:head
     (h/include-css "/css/about.css")
     (h/include-js "/js/gg.js")]
    [:body
-    [:h1 "About"]
-    [:p "This map has been developed during "
-     (e/link-to {:target "_blank"} "http://www.wikilovesmonuments.org/" "Wiki Loves Monuments 2013")
+    (when msg [:div [:h1 "Not found"] [:p msg]])
+    [:h1 (tower/t :en trad :about/a)]
+    [:p (tower/t :en trad :about/b)
+     (e/link-to {:target "_blank"}
+                "http://www.wikilovesmonuments.org/"
+                "Wiki Loves Monuments 2013")
      "."]
-    [:p "It allows you to explore cultural heritage treasures of the world."]
-    [:p "<font color=\"blue\">Blue</font> markers are for monuments with a photo."]
-    [:p "<font color=\"red\">Red</font> markers are for monuments without one."]
-    [:p "All the pictures are from "
+    [:p (tower/t :en trad :about/c)]
+    [:p (tower/t :en trad :about/d)]
+    [:p (tower/t :en trad :about/e)]
+    [:p (tower/t :en trad :about/f)
      (e/link-to {:target "_blank"} 
                 "https://commons.wikimedia.org"
-                "Wikimedia Commons.")
-     ", available under a free license."]
-    [:p "The code behind this website is available from "
+                "Wikimedia Commons")
+     (tower/t :en trad :about/g)]
+    [:p (tower/t :en trad :about/h)
      (e/link-to {:target "_blank"} "https://github.com/bzg/wlmmap" "github") "."]
-    [:p "I appreciate feedback and suggestions! "
-     (e/link-to "mailto:bzg@bzg.fr?subject=[panoramap]" "Drop me an email")]
+    [:p (tower/t :en trad :about/i)
+     (e/link-to "mailto:bzg@bzg.fr?subject=[panoramap]"
+                (tower/t :en trad :about/j))]
     [:p "-- " (e/link-to {:target "_blank"} "http://bzg.fr" "bzg")]]))
 
 (defn- login-form []
@@ -388,15 +424,16 @@
         [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]]]))
 
 (defroutes app-routes 
-  (GET "/" [] (index))
+  (GET "/" [] (index nil))
+  (GET "/:lang/" [lang] (index lang))
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   (POST "/backend" {params :params} (backend params))
   (POST "/process" {params :params} (process params))
-  (GET "/about" [] (about))
+  (GET "/about" []  (about))
   (GET "/login" [] (login-form))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")
-  (route/not-found "Not found"))
+  (route/not-found (about "Sorry, the page you're looking for could not be found.")))
 
 (def app (middleware/app-handler
           [(wrap-friend (wrap-rpc app-routes))]))

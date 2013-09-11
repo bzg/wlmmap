@@ -19,7 +19,8 @@
    [ring-server "0.2.8"]
    [shoreleave/shoreleave-remote-ring "0.3.0"]
    [shoreleave/shoreleave-remote "0.3.0"]
-   [domina "1.0.2-SNAPSHOT"]]
+   [domina "1.0.2-SNAPSHOT"]
+   [com.taoensso/tower "2.0.0-beta5"]]
   :ring
   {:handler wlmmap.handler/war-handler,
    :init wlmmap.handler/init,

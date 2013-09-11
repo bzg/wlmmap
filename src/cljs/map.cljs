@@ -112,6 +112,10 @@
                  (when (not (empty? layers)) (removelastlayer))
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
 
-
 ;; initialize the HTML page in unobtrusive way
-(set! (.-onload js/window) setmap)
+(set! (.-onload js/window)
+      (do (let [lang (subs (.-language js/navigator) 0 2)
+                loc (.-location js/window)]
+            (when-not (re-find #"/../$" loc)
+              (set! (.-href loc) (str loc lang "/"))))
+          setmap))
