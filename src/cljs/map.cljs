@@ -15,9 +15,8 @@
 
 (def stopper "stop")
 (def lang (.-language js/navigator))
-(macros/rpc (set-db-options-from-lang (.-language js/navigator)) [p] p)
 (def zoomlimit 10)
-(def layers ())
+(def layers '())
 
 (defn removelastlayer []
   (when (not (nil? (last layers)))
@@ -88,17 +87,14 @@
 
 (defn setmap []
   (let [db (dom/by-id "db")
-        ex (dom/by-id "ex")
         show (dom/by-id "sm")
         stop (dom/by-id "stop")
         per (dom/by-id "per")
         sh (dom/by-id "showhere")]
-    (set! (.-onclick ex) #(.reload js/location))
     (set! (.-onclick show)
-          #(do
-             (set! stopper "stop")
-             (when (not (empty? layers)) (removelastlayer))
-             (addmarkers (clojure.string/replace (.-value db) #" ?/ ?" ""))))
+          #(do (set! stopper "stop")
+               (when (not (empty? layers)) (removelastlayer))
+               (addmarkers (clojure.string/replace (.-value db) #" ?/ ?" ""))))
     (set! (.-onclick stop) #(set! stopper "stop"))
     (set! (.-onclick sh)
           #(let [z (.getZoom mymap)]
@@ -112,10 +108,9 @@
                  (when (not (empty? layers)) (removelastlayer))
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
 
-;; initialize the HTML page in unobtrusive way
-(set! (.-onload js/window)
-      (do (let [lang (subs (.-language js/navigator) 0 2)
-                loc (.-location js/window)]
-            (when-not (re-find #"/../$" loc)
-              (set! (.-href loc) (str loc lang "/"))))
-          setmap))
+(let [lang0 (.-language js/navigator)
+       loc (.-location js/window)]
+  (when-not (re-find #"/../#?$" loc)
+    (set! (.-href loc) (str loc (subs lang0 0 2) "/"))))
+
+(set! (.-onload js/window) setmap)
