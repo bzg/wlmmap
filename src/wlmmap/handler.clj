@@ -247,7 +247,7 @@
 (defremote get-center [db]
   (wcar* (car/hget (str "s" db) "rep")))
 
-(defn- index [lang]
+(defn- index [lang & db]
   (let [lng (or lang "en")]
     (h/html5
      [:head
@@ -393,8 +393,7 @@
     [:p (tower/t :en trad :about/b)
      (e/link-to {:target "_blank"}
                 "http://www.wikilovesmonuments.org/"
-                "Wiki Loves Monuments 2013")
-     "."]
+                "Wiki Loves Monuments 2013") "."]
     [:p (tower/t :en trad :about/c)]
     [:p (tower/t :en trad :about/d)]
     [:p (tower/t :en trad :about/e)]
@@ -426,6 +425,7 @@
 (defroutes app-routes 
   (GET "/" [] (index nil))
   (GET "/:lang/" [lang] (index lang))
+  (GET "/:lang/:db" [lang db] (index lang db))
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   (POST "/backend" {params :params} (backend params))
   (POST "/process" {params :params} (process params))

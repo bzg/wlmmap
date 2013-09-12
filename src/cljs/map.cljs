@@ -109,8 +109,11 @@
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
 
 (let [lang0 (.-language js/navigator)
-       loc (.-location js/window)]
-  (when-not (re-find #"/../#?$" loc)
-    (set! (.-href loc) (str loc (subs lang0 0 2) "/"))))
+      loc (.-location js/window)
+      wdb (re-find #"/../([^/]+)#?$" loc)]
+  (cond (not (re-find #"/../([^/]+)?#?$" loc))
+        (set! (.-href loc) (str loc (subs lang0 0 2) "/"))
+        wdb
+        (addmarkers (second wdb))))
 
 (set! (.-onload js/window) setmap)
