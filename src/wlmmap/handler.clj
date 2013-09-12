@@ -271,9 +271,9 @@
        [:form
         (f/drop-down {:id "db"} "db" (db-options-localized lng))
         [:p
-         (e/link-to {:id "sm" :style "color:blue"} "#"
+         (e/link-to {:id "sm" :style "color:green"} "#"
                     (tower/t (keyword lng) trad :main/show))
-         (e/link-to {:id "stop" :style "color: red"} "#"
+         (e/link-to {:id "stop" :style "color:red"} "#"
                     (tower/t (keyword lng) trad :main/stop))
          (e/link-to {:id "showhere" :style "color:yellow"} "#" "....")]
         "</p>"
