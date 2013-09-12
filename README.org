@@ -1,0 +1,62 @@
+* What is Wlmmap ?
+
+Wlmmap is the web application behind http://www.panoramap.org
+
+All the data displayed on http://www.panoramap.org come from the
+Wikimedia Commons database and are released under a free license.
+
+* Core features
+
+See http://www.panoramap.org
+
+Users can display cultural heritage monuments for a country/language
+on a map.
+
+For example, you can display monuments from France in french or from
+France in catalan: pick up the one you want from the menu, then click
+"Show".
+
+This will load data in a local copy of of the [[https://commons.wikimedia.org/wiki/Commons:Monuments_database][Wikimedia Commons
+monuments database]], maintained by [[http://en.wikipedia.org/wiki/User:Multichill][multichill]].
+
+If you click on "Here", this will request the monuments database
+directly, not the local copy, and display the results on the map.
+
+* Implementation
+
+Wlmmap is built on top of [[http://www.mapbox.com/][mapbox.js]] which relies on [[http://leafletjs.com/][leaflet.js]] to
+display maps from [[http://www.openstreetmap.org][OpenStreetMap]].
+
+The javascript part of wlmmap is compiled from the ClojureScript
+(=.cljs=) file.
+
+This =.cljs= file uses [[https://github.com/dribnet/blade][blade]], a ClojureScript wrapper for leaflet
+and/or mapbox by [[https://github.com/dribnet][Tom White]] -- thanks to him for his [[https://github.com/dribnet/blade/issues/1][help]].
+
+** Slow results?
+
+The toolserver does not allow more than 5000 results, while countries
+often have a lot more monuments.
+
+So we stored a copy of the monuments database in a redis instance,
+from which we can get faster results.  Then, since clustering >10000
+markers takes long, we display monuments one by one instead, using the
+experimental =core.async= Clojure library.
+
+This (hopefully) leaves the UI reactive.
+
+* Support
+
+You can help by proposing patches for
+
+- the localization;
+
+- using =addLayers= instead of =addLayer= to bulk add markers to the
+  markercluster (see https://github.com/Leaflet/Leaflet.markercluster)
+
+Thanks!
+
+* License
+
+wlmmap is released under the [[http://en.wikipedia.org/wiki/Eclipse_Public_License][Eclispe Public License]], the same as
+Clojure.

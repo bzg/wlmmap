@@ -1,5 +1,5 @@
 * WAIT Use addLayers instead of addLayer
-* WAIT Merge useless doublons from gb-/en
+* WAIT Merge useless doublons from gb-/en etc.
 * WAIT Filter by with-image (use mapbox add-on for this)
 * TODO Add mapbox minimap
 * Archive							 :ARCHIVE:
