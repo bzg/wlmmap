@@ -41,5 +41,6 @@
                 {:output-to "resources/public/js/main.js"
                  :optimizations :simple
                  :pretty-print false}}]}
+  :java-agents [[com.newrelic.agent.java/newrelic-agent "2.21.4"]]
   :description "Wlmmap: Wiki Loves Monuments Map"
   :min-lein-version "2.0.0")
