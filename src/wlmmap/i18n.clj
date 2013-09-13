@@ -35,4 +35,20 @@
                  :g ", disponibles sous licence libre."
                  :h "Le code derrière ce site web est disponible depuis "
                  :i "J'apprécie les remarques, critiques et suggestions! "
-                 :j "Envoyez-moi un e-mail"}}}})
+                 :j "Envoyez-moi un e-mail"}}
+    :it {:main {:show "Mostra"
+                :stop "Stop"
+                :here "Qui"
+                :about "About"
+                :links "Links"}
+         :links {:intro "Questi links mostrano i monumenti sulla mappa."}
+         :about {:a "About"
+                 :b "Questa mappa è stata sviluppata durante "
+                 :c "Ti permette di esplorare i tesori del patrimonio culturale di tutto il mondo."
+                 :d "I segnalini blu indicano i monumenti con foto."
+                 :e "I segnalini rossi indicano i monumenti senza foto."
+                 :f "Tutte le foto vengono da "
+                 :g ", e sono rilasciate con una licenza libera."
+                 :h "Il codice sorgente di questo sito è disponibile su "
+                 :i "Apprezzo ogni feedback ogni suggerimento! "
+                 :j "Mandami una mail."}}}})
