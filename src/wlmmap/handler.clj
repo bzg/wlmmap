@@ -26,7 +26,9 @@
    {:en {:main {:show "Show"
                 :stop "Stop"
                 :here "Here"
-                :about "About"}
+                :about "About"
+                :links "Links"}
+         :links {:intro "These links auto-display the monuments on the map."}
          :about {:a "About"
                  :b "This map has been developed during "
                  :c "It allows you to explore cultural heritage treasures of the world."
@@ -40,7 +42,9 @@
     :fr {:main {:show "Afficher"
                 :stop "Stop"
                 :here "Ici"
-                :about "À propos"}
+                :about "À propos"
+                :links "Liens"}
+         :links {:intro "Ces liens directs affichent immédiatement les monuments sur la carte."}
          :about {
                  :a "À propos"
                  :b "Cette carte a été développée pour "
@@ -278,7 +282,9 @@
          (e/link-to {:id "showhere" :style "color:yellow"} "#" "....")]
         "</p>"
         [:p (f/text-field {:id "per" :size 12 :style "text-align: right; background-color: black; border: 0px; color: white;"} "per")]
-        [:p (e/link-to {:id "about" :style "font-size:90%;"} "/about"
+        [:p (e/link-to {:id "links" :style "font-size:90%;"} (str "/" lng "/links")
+                       (tower/t (keyword lng) trad :main/links))]
+        [:p (e/link-to {:id "about" :style "font-size:90%;"} (str "/" lng "/about")
                        (tower/t (keyword lng) trad :main/about))]]]
       (h/include-js "/js/main.js")])))
 
@@ -382,31 +388,43 @@
                  :credential-fn
                  #(creds/bcrypt-credential-fn @admin %))]}))
 
-(defn- about [& msg]
+(defn- links [lang]
+  (h/html5
+   [:head
+    (h/include-css "/css/about.css")
+    (h/include-js "/js/gg.js")]
+   [:body
+    [:p (tower/t (keyword lang) trad :links/intro)]
+    [:ul
+     (doall (for [[name raw] (db-options-localized lang)]
+              [:li (e/link-to (str "http://www.panoramap.org/" lang "/"
+                                   (clojure.string/replace raw #"/" "")) name)]))]]))
+
+(defn- about [lang & msg]
   (h/html5
    [:head
     (h/include-css "/css/about.css")
     (h/include-js "/js/gg.js")]
    [:body
     (when msg [:div [:h1 "Not found"] [:p msg]])
-    [:h1 (tower/t :en trad :about/a)]
-    [:p (tower/t :en trad :about/b)
+    [:h1 (tower/t (keyword lang) trad :about/a)]
+    [:p (tower/t (keyword lang) trad :about/b)
      (e/link-to {:target "_blank"}
                 "http://www.wikilovesmonuments.org/"
                 "Wiki Loves Monuments 2013") "."]
-    [:p (tower/t :en trad :about/c)]
-    [:p (tower/t :en trad :about/d)]
-    [:p (tower/t :en trad :about/e)]
-    [:p (tower/t :en trad :about/f)
+    [:p (tower/t (keyword lang) trad :about/c)]
+    [:p (tower/t (keyword lang) trad :about/d)]
+    [:p (tower/t (keyword lang) trad :about/e)]
+    [:p (tower/t (keyword lang) trad :about/f)
      (e/link-to {:target "_blank"} 
                 "https://commons.wikimedia.org"
                 "Wikimedia Commons")
-     (tower/t :en trad :about/g)]
-    [:p (tower/t :en trad :about/h)
+     (tower/t (keyword lang) trad :about/g)]
+    [:p (tower/t (keyword lang) trad :about/h)
      (e/link-to {:target "_blank"} "https://github.com/bzg/wlmmap" "github") "."]
-    [:p (tower/t :en trad :about/i)
+    [:p (tower/t (keyword lang) trad :about/i)
      (e/link-to "mailto:bzg@bzg.fr?subject=[panoramap]"
-                (tower/t :en trad :about/j))]
+                (tower/t (keyword lang) trad :about/j))]
     [:p "-- " (e/link-to {:target "_blank"} "http://bzg.fr" "bzg")]]))
 
 (defn- login-form []
@@ -424,16 +442,17 @@
 
 (defroutes app-routes 
   (GET "/" [] (index nil))
+  (GET "/:lang/links" [lang] (links lang))
+  (GET "/:lang/about" [lang]  (about lang))
   (GET "/:lang/" [lang] (index lang))
   (GET "/:lang/:db" [lang db] (index lang db))
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   (POST "/backend" {params :params} (backend params))
   (POST "/process" {params :params} (process params))
-  (GET "/about" []  (about))
   (GET "/login" [] (login-form))
   (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
   (route/resources "/")
-  (route/not-found (about "Sorry, the page you're looking for could not be found.")))
+  (route/not-found (about "en" "Sorry, the page you're looking for could not be found.")))
 
 (def app (middleware/app-handler
           [(wrap-friend (wrap-rpc app-routes))]))

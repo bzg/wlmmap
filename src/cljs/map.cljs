@@ -47,7 +47,6 @@
                      #(go (doseq [[a cnt] (map list % (range 100000))]
                             (<! (timeout 20))
                             (>! ch [a cnt (/ (* cnt 100) (count %))]))))
-
     (.addLayer mymap markers)
     (remote-callback
      :get-center [dbb]
