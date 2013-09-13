@@ -1,3 +1,6 @@
+
+#+HTML: <a href="http://travis-ci.org/bzg/wlmmap"><img src="https://api.travis-ci.org/bzg/wlmmap.png"/></a>
+
 * What is Wlmmap ?
 
 Wlmmap is the web application behind http://www.panoramap.org
