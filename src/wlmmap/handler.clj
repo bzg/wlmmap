@@ -118,6 +118,7 @@
   (let [lng (or lang "en")]
     (h/html5
      [:head
+      [:title "Panoramap - explore cultural heritage"]
       (h/include-css "/css/mapbox.css")
       "<!--[if lt IE 8]>"
       (h/include-css "/css/mapbox.ie.css")
@@ -255,6 +256,7 @@
 (defn- links [lang]
   (h/html5
    [:head
+    [:title "Panoramap - explore cultural heritage"]
     (h/include-css "/css/about.css")
     (h/include-js "/js/gg.js")]
    [:body
@@ -267,6 +269,7 @@
 (defn- about [lang & msg]
   (h/html5
    [:head
+    [:title "Panoramap - explore cultural heritage"]
     (h/include-css "/css/about.css")
     (h/include-js "/js/gg.js")]
    [:body
