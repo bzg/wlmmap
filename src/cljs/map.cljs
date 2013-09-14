@@ -24,7 +24,7 @@
         (set! (.-value (dom/by-id "per")) "")
         (set! layers (butlast layers)))))
 
-(defn addmarkers [dbb]
+(defn- addmarkers [dbb]
   (set! stopper "go")
   (let [ch (chan)
         markers (L/MarkerClusterGroup.)
@@ -60,14 +60,14 @@
      (get-markers-toolserver map-bounds-string) [res]
      (.addLayers
       markers
-      (into [] (map #(let [[id [lat lng] img title] %
-                           icon ((get-in L [:mapbox :marker :icon])
-                                 {:marker-symbol ""
-                                  :marker-color (if img "FF0000" "0044FF")})
-                           marker (-> L (.marker (L/LatLng. lat lng) {:icon icon}))]
-                       (.bindPopup marker title)
-                       marker)
-                    res))))
+      (map #(let [[_ [lat lng] img title] %
+                  icon ((get-in L [:mapbox :marker :icon])
+                        {:marker-symbol ""
+                         :marker-color (if img "FF0000" "0044FF")})
+                  marker (-> L (.marker (L/LatLng. lat lng) {:icon icon}))]
+              (.bindPopup marker title)
+              marker)
+           res)))
     (.addLayer mymap markers)))
 
 (defn- geolocalize [position]
@@ -80,7 +80,7 @@
   (let [z (.getZoom mymap)
         sh (dom/by-id "showhere")]
     (when (>= z zoomlimit)
-      (set! (.-innerHTML sh) "->×<-"))
+      (set! (.-innerHTML sh) "->?<-"))
     (when (< z zoomlimit)
       (set! (.-innerHTML sh) "...."))))
 

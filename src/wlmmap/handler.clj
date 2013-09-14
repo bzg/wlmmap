@@ -147,8 +147,8 @@
       [:div {:id "top-left"}
        [:form [:select {:id "db"} (f/select-options dbl (get-selected-db dbl lng))]]
        (e/link-to {:id "sm"} "#" (tower/t (keyword lng) trad :main/show))
-       (e/link-to {:id "stop"} "#" (tower/t (keyword lng) trad :main/stop))
-       (e/link-to {:id "showhere"} "#" "....")
+       (e/link-to {:id "stop" :accesskey "!"} "#" (tower/t (keyword lng) trad :main/stop))
+       (e/link-to {:id "showhere" :accesskey "?"} "#" "....")
        (f/text-field {:id "per" :size 12} "per")]
       [:div {:id "top-right"}
        (e/link-to {:id "links"} (str "/" lng "/links")
