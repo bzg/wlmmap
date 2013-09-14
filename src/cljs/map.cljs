@@ -105,15 +105,15 @@
     (set! (.-onclick stop) #(set! stopper "stop"))
     (set! (.-onclick sh)
           #(let [z (.getZoom mymap)]
-             (when (< z zoomlimit)
-               (js/alert
-                (str "This will load up to 5000 monuments from the database.\n\n"
-                     "It takes a while if the focus is too large.\n\n"
-                     "Zoom " (- zoomlimit z)
-                     " times to be more comfortable.")))
-             (do (set! stopper "stop")
-                 (when (seq layers) (removelastlayer))
-                 (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
+             (when (and (< z zoomlimit)
+                        (js/confirm
+                         (str "This will load up to 5000 monuments from the database.\n\n"
+                              "It takes a while if the focus is too large.\n\n"
+                              "Zoom " (- zoomlimit z)
+                              " times to be more comfortable.")))
+               (do (set! stopper "stop")
+                   (when (seq layers) (removelastlayer))
+                   (addmarkers-toolserver (.toBBoxString (.getBounds mymap)))))))))
 (defn- init []
   (let [lang0 (.-language js/navigator)
         loc (.-location js/window)
