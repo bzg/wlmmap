@@ -144,22 +144,19 @@
       "<![endif]-->"
       (h/include-js "/js/leaflet.markercluster.js")
       "<div id=\"map\"></div>"
-      [:div {:class "corner"}
-       [:form
-        [:select {:id "db"} (f/select-options dbl (get-selected-db dbl lng))]
-        [:p
-         (e/link-to {:id "sm" :style "color:green"} "#"
-                    (tower/t (keyword lng) trad :main/show))
-         (e/link-to {:id "stop" :style "color:red"} "#"
-                    (tower/t (keyword lng) trad :main/stop))
-         (e/link-to {:id "showhere" :style "color:yellow"} "#" "....")]
-        "</p>"
-        [:p (f/text-field {:id "per" :size 12 :style "text-align: right; background-color: black; border: 0px; color: white;"} "per")]
-        [:p
-         (e/link-to {:id "links" :style "font-size:90%;"} (str "/" lng "/links")
-                    (tower/t (keyword lng) trad :main/links))
-         (e/link-to {:id "about" :style "font-size:90%;"} (str "/" lng "/about")
-                    (tower/t (keyword lng) trad :main/about))]]]
+      [:div {:id "top-left"}
+       [:form [:select {:id "db"} (f/select-options dbl (get-selected-db dbl lng))]]
+       (e/link-to {:id "sm"} "#" (tower/t (keyword lng) trad :main/show))
+       (e/link-to {:id "stop"} "#" (tower/t (keyword lng) trad :main/stop))
+       (e/link-to {:id "showhere"} "#" "....")
+       (f/text-field {:id "per" :size 12} "per")]
+      [:div {:id "top-right"}
+       (e/link-to {:id "links"} (str "/" lng "/links")
+                  (tower/t (keyword lng) trad :main/links))
+       (e/link-to {:id "about"} (str "/" lng "/about")
+                  (tower/t (keyword lng) trad :main/about))]
+      [:div {:id "bottom-right"} "Panoramap.org -- "
+       (e/link-to "http://bzg.fr" "bzg.fr")]
       (h/include-js "/js/main.js")])))
 
 (defn- backend

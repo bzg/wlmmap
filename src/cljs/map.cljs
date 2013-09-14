@@ -84,7 +84,7 @@
   (let [z (.getZoom mymap)
         sh (dom/by-id "showhere")]
     (when (>= z zoomlimit)
-      (set! (.-innerHTML sh) "HERE"))
+      (set! (.-innerHTML sh) "->×<-"))
     (when (< z zoomlimit)
       (set! (.-innerHTML sh) "...."))))
 

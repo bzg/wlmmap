@@ -6,68 +6,84 @@ body {
     font-family: "Inconsolata";
     margin: 0;
     padding: 0;
-}
-
-form.main {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
+    background-color: #eee;
 }
 
 #map {
     position: absolute;
-    top:0;
-    bottom:0;
+    top:4em;
+    bottom:5%;
     width:100%;
+    border: 1px solid gray;
 }
 
-.corner {
-    text-align: right;
+#tt {
+    margin: 0px;
+    padding: 0px;
+}
+
+#top-left {
     position:fixed;
-    top:10px;
-    right:10px;
-    opacity:.9;
-    border-radius:15px;
-    padding:1em;
-    background: black;
-    color: white;
-    z-index: 1000;
+    top:.1em;
+    padding:.5em;
 }
 
-.corner p {
-    margin-top: .7em;
-    padding: 0;
+#top-left form {display: inline;}
+
+#bottom-right {
+    position: fixed;
+    font-size: 100%;
+    bottom: 1em;
+    right: 2em;
 }
 
-.corner:hover {
-    opacity:.9;
+#top-left select {
+    background-color: white;
+    padding: .3em;
+    border: 1px solid #ddd;
 }
 
-.corner span {
-    display:block;
-    }
-.corner:hover span {
-    display:block;
+#top-left input {
+    color: black; 
+    background-color: #eee;
+    border: 0;
+    text-align: right;
 }
 
-.corner a {
-    background: black;
-    color: #eee;
+#showhere {color: blue;}
+#sm  {color: green;}
+#stop {color: red;}
+#links #about {font-size: 90%;}
+
+#top-right {
+    position: fixed;
+    top: 15px;
+    right: 10px;
+    color: black;
+}
+
+#top-right a {color: black;}
+
+#top-left a, #top-right a
+{
     padding: .4em;
     text-decoration: none;
+    text-shadow: none;
+    -webkit-transition: 200ms linear 0s;
+    -moz-transition: 200ms linear 0s;
+    -o-transition: 200ms linear 0s;
+    transition: 200ms linear 0s;
+    outline: 0 none;
 }
 
-.corner a:hover {
-    background: #ccc;
-    color: black;
+#top-left a:hover, #top-right a:hover {
     text-decoration: none;
+    text-shadow: 0px 0px 2px #4d4d4d, 0px 5px 10px #aeaeae;
 }
 
-.corner a.stop {
-    background: red;
+a.twitter {
+    background: url('http://bzg.fr/u/icons/twitter.png') center top no-repeat;
 }
-
-.corner a.stop:hover {
-    background: darkred;
+a.twitter:hover {
+    background: url('http://bzg.fr/u/icons/twitter_hover.png') center top no-repeat;
 }
-
