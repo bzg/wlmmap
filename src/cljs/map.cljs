@@ -9,9 +9,9 @@
                    [shoreleave.remotes.macros :as macros]))
 
 (blade/bootstrap)
- 
+
 (def mymap (-> L .-mapbox (.map "map" "examples.map-9ijuk24y")
-               (.setView [45 3.215] 6)))   
+               (.setView [45 3.215] 6)))
 
 (def stopper "stop")
 (def lang (.-language js/navigator))
