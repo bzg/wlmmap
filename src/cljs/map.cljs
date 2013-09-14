@@ -19,7 +19,7 @@
 (def layers '())
 
 (defn removelastlayer []
-  (when (not (nil? (last layers)))
+  (when (seq (last layers))
     (do (.removeLayer mymap (last layers))
         (set! (.-value (dom/by-id "per")) "")
         (set! layers (butlast layers)))))
@@ -92,7 +92,7 @@
         sh (dom/by-id "showhere")]
     (set! (.-onclick show)
           #(do (set! stopper "stop")
-               (when (not (empty? layers)) (removelastlayer))
+               (when (seq layers) (removelastlayer))
                (addmarkers (clojure.string/replace (.-value db) #" ?/ ?" ""))))
     (set! (.-onclick stop) #(set! stopper "stop"))
     (set! (.-onclick sh)
@@ -104,7 +104,7 @@
                      "Zoom " (- zoomlimit z)
                      " times to be more comfortable.")))
              (do (set! stopper "stop")
-                 (when (not (empty? layers)) (removelastlayer))
+                 (when (seq layers) (removelastlayer))
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
 
 (let [lang0 (.-language js/navigator)
