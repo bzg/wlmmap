@@ -114,8 +114,17 @@
 (defremote get-center [db]
   (wcar* (car/hget (str "s" db) "rep")))
 
+(defn- get-selected-db [dbl lng]
+  (let [rm1 "%s/%s" rm2 ".+/%s"
+        f (fn [rm] (second
+                    (first (filter #(re-find
+                                     (re-pattern
+                                      (format rm lng lng)) (get % 1)) dbl))))]
+    (or (f rm1) (f rm2))))
+
 (defn- index [lang & db]
-  (let [lng (or lang "en")]
+  (let [lng (or lang "en")
+        dbl (db-options-localized lng)]
     (h/html5
      [:head
       [:title "Panoramap - explore cultural heritage"]
@@ -137,7 +146,7 @@
       "<div id=\"map\"></div>"
       [:div {:class "corner"}
        [:form
-        (f/drop-down {:id "db"} "db" (db-options-localized lng))
+        [:select {:id "db"} (f/select-options dbl (get-selected-db dbl lng))]
         [:p
          (e/link-to {:id "sm" :style "color:green"} "#"
                     (tower/t (keyword lng) trad :main/show))
