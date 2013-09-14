@@ -86,14 +86,6 @@
 
 (.on mymap "zoomend" maybe-show-here)
 
-(defn- addmarkers-plus []
-  (when (or (>= (.getZoom mymap) zoomlimit)
-            (js/confirm "Possibly display up to 5000 monuments?"))
-    (when (seq layers) (removelastlayer))
-    (addmarkers-toolserver (.toBBoxString (.getBounds mymap)))))
-
-(.on mymap "dragend" addmarkers-plus)
-
 (defn- setmap [local]
   (let [db (dom/by-id "db")
         show (dom/by-id "sm")
