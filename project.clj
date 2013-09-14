@@ -11,6 +11,7 @@
    ;; [org.clojure/clojurescript "0.0-1877"]
    [org.clojure/core.async "0.1.0-SNAPSHOT"]
    [lib-noir "0.6.8"]
+   [midje "1.5.1"]
    [com.cemerick/friend "0.1.5"]
    [net.drib/blade "0.1.0"]
    [compojure "1.1.5"]
