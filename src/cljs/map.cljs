@@ -13,12 +13,6 @@
 (def mymap (-> L .-mapbox (.map "map" "examples.map-9ijuk24y")
                (.setView [45 3.215] 6)))   
 
-(defn geolocalize-and-display-monuments-around-here [position]
-  (let [longitude (.-longitude js/position.coords)
-        latitude (.-latitude js/position.coords)]
-    (.setView mymap (vector latitude longitude) 15)
-    (addmarkers-toolserver (.toBBoxString (.getBounds mymap)))))
-
 (def stopper "stop")
 (def lang (.-language js/navigator))
 (def zoomlimit 10)
@@ -80,6 +74,12 @@
                             (>! ch [a cnt (/ (* cnt 100) (count %))]))))
     (.addLayer mymap markers)))
 
+(defn- geolocalize [position]
+  (let [longitude (.-longitude js/position.coords)
+        latitude (.-latitude js/position.coords)]
+    (.setView mymap (vector latitude longitude) 15)
+    (addmarkers-toolserver (.toBBoxString (.getBounds mymap)))))
+
 (defn maybe-show-here []
   (let [z (.getZoom mymap)
         sh (dom/by-id "showhere")]
@@ -90,14 +90,14 @@
 
 (.on mymap "zoomend" #(maybe-show-here))
 
-(defn setmap []
+(defn- setmap [local]
   (let [db (dom/by-id "db")
         show (dom/by-id "sm")
         stop (dom/by-id "stop")
         per (dom/by-id "per")
         sh (dom/by-id "showhere")]
-    (.getCurrentPosition (.-geolocation js/navigator)
-                         geolocalize-and-display-monuments-around-here)
+    (when (= local 1)
+      (.getCurrentPosition (.-geolocation js/navigator) geolocalize))
     (set! (.-onclick show)
           #(do (set! stopper "stop")
                (when (seq layers) (removelastlayer))
@@ -114,13 +114,15 @@
              (do (set! stopper "stop")
                  (when (seq layers) (removelastlayer))
                  (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
+(defn- init []
+  (let [lang0 (.-language js/navigator)
+        loc (.-location js/window)
+        wdb (re-find #"/../([^/]+)#?$" loc)]
+    (cond (not (re-find #"/../([^/]+)?#?$" loc))
+          (do (set! (.-href loc) (str loc (subs lang0 0 2) "/"))
+              (setmap 0))
+          wdb
+          (do (setmap 0) (addmarkers (second wdb)))
+          :else (setmap 1))))
 
-(let [lang0 (.-language js/navigator)
-      loc (.-location js/window)
-      wdb (re-find #"/../([^/]+)#?$" loc)]
-  (cond (not (re-find #"/../([^/]+)?#?$" loc))
-        (set! (.-href loc) (str loc (subs lang0 0 2) "/"))
-        wdb
-        (addmarkers (second wdb))))
-
-(set! (.-onload js/window) setmap)
+(set! (.-onload js/window) init)
