@@ -9,9 +9,15 @@
                    [shoreleave.remotes.macros :as macros]))
 
 (blade/bootstrap)
-
+ 
 (def mymap (-> L .-mapbox (.map "map" "examples.map-9ijuk24y")
                (.setView [45 3.215] 6)))   
+
+(defn geolocalize-and-display-monuments-around-here [position]
+  (let [longitude (.-longitude js/position.coords)
+        latitude (.-latitude js/position.coords)]
+    (.setView mymap (vector latitude longitude) 15)
+    (addmarkers-toolserver (.toBBoxString (.getBounds mymap)))))
 
 (def stopper "stop")
 (def lang (.-language js/navigator))
@@ -90,6 +96,8 @@
         stop (dom/by-id "stop")
         per (dom/by-id "per")
         sh (dom/by-id "showhere")]
+    (.getCurrentPosition (.-geolocation js/navigator)
+                         geolocalize-and-display-monuments-around-here)
     (set! (.-onclick show)
           #(do (set! stopper "stop")
                (when (seq layers) (removelastlayer))
