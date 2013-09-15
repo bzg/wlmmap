@@ -12,14 +12,9 @@ body {
 #map {
     position: absolute;
     top:4em;
-    bottom:5%;
+    bottom:4em;
     width:100%;
-    border: 1px solid gray;
-}
-
-#tt {
-    margin: 0px;
-    padding: 0px;
+    border: 3px solid #fff;
 }
 
 #top-left {
@@ -46,6 +41,7 @@ body {
 #top-left input {
     color: black; 
     background-color: #eee;
+    margin-left: 1em;
     border: 0;
     text-align: right;
 }
@@ -53,7 +49,6 @@ body {
 #showhere {color: blue;}
 #sm  {color: green;}
 #stop {color: red;}
-#links #about {font-size: 90%;}
 
 #top-right {
     position: fixed;
@@ -62,11 +57,12 @@ body {
     color: black;
 }
 
-#top-right a {color: black;}
+#top-right a {color: blue;}
 
 #top-left a, #top-right a
 {
-    padding: .4em;
+    padding: .3em;
+    margin-left: .2em;
     text-decoration: none;
     text-shadow: none;
     -webkit-transition: 200ms linear 0s;
@@ -78,12 +74,6 @@ body {
 
 #top-left a:hover, #top-right a:hover {
     text-decoration: none;
-    text-shadow: 0px 0px 2px #4d4d4d, 0px 5px 10px #aeaeae;
-}
-
-a.twitter {
-    background: url('http://bzg.fr/u/icons/twitter.png') center top no-repeat;
-}
-a.twitter:hover {
-    background: url('http://bzg.fr/u/icons/twitter_hover.png') center top no-repeat;
+    background-color: white;
+    box-shadow: 0px 0px 2px #4d4d4d, 0px 5px 10px #aeaeae;
 }

@@ -127,7 +127,7 @@
         dbl (db-options-localized lng)]
     (h/html5
      [:head
-      [:title "Panoramap - explore cultural heritage"]
+      [:title "Panoramap.org - cultural heritage monuments"]
       (h/include-css "/css/mapbox.css")
       "<!--[if lt IE 8]>"
       (h/include-css "/css/mapbox.ie.css")
@@ -148,16 +148,18 @@
        [:form [:select {:id "db"} (f/select-options dbl (get-selected-db dbl lng))]]
        (e/link-to {:id "sm"} "#" (tower/t (keyword lng) trad :main/show))
        (e/link-to {:id "stop" :accesskey "!"} "#" (tower/t (keyword lng) trad :main/stop))
-       (e/link-to {:id "showhere" :accesskey "?"} "#" "....")
+       (e/link-to {:id "showhere" :accesskey "?" :title (tower/t (keyword lng) trad :main/showhere)} "#" "...")
        (f/text-field {:id "per" :size 12} "per")]
       [:div {:id "top-right"}
        (e/link-to {:id "links"} (str "/" lng "/links")
                   (tower/t (keyword lng) trad :main/links))
        (e/link-to {:id "about"} (str "/" lng "/about")
-                  (tower/t (keyword lng) trad :main/about))]
+                  (tower/t (keyword lng) trad :main/about))
+       (h/include-js "/js/tt.js")]
       [:div {:id "bottom-right"} "Panoramap.org -- "
        (e/link-to "http://bzg.fr" "bzg.fr")]
-      (h/include-js "/js/main.js")])))
+      (h/include-js "/js/main.js")
+      ])))
 
 (defn- backend
   "interface to select which lang/country to store"

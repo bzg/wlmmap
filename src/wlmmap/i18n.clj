@@ -4,11 +4,13 @@
   {:dev-mode? true
    :fallback-locale :en
    :dictionary
-   {:en {:main {:show "Show"
+   {:en {:main {:show "Go"
                 :stop "Stop"
                 :here "Here"
                 :about "About"
-                :links "Links"}
+                :links "Links"
+                :showhere "Show monuments around (Alt-?)"
+                }
          :links {:intro "These links auto-display the monuments on the map."}
          :about {:a "About"
                  :b "This map has been developed during "
@@ -24,7 +26,8 @@
                 :stop "Stop"
                 :here "Ici"
                 :about "À propos"
-                :links "Liens"}
+                :links "Liens"
+                :showhere "Afficher les monuments autour (Alt-?)"}
          :links {:intro "Ces liens directs affichent immédiatement les monuments sur la carte."}
          :about {:a "À propos"
                  :b "Cette carte a été développée pour "
