@@ -58,10 +58,10 @@
                  arl (format wp-link-format-url lng (codec/url-encode art) art)
                  src (format src-format-url reg id)
                  all (str "<h3>" nam "</h3>"
-                          (when (not (= "" imc)) (str ilk "<br/>"))
-                          (when (not (= "" art)) (str arl "<br/>"))
-                          (when (not (= "" reg)) src))]
-             (list cnt (list (:lat m) (:lon m)) (= "" imc) all))))
+                          (if (empty? imc) "[No image]<br/><br/>" (str ilk "<br/>"))
+                          (when (seq art) (str arl "<br/>"))
+                          (when (seq reg) src))]
+             (list cnt (list (:lat m) (:lon m)) (empty? imc) all))))
        monuments
        (range (if (empty? start) 0 (Integer/parseInt start)) 100000)))
 
