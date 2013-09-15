@@ -18,7 +18,7 @@
 (def zoomlimit 10)
 (def layers '())
 
-(defn removelastlayer []
+(defn- removelastlayer []
   (when (seq (last layers))
     (do (.removeLayer mymap (last layers))
         (set! (.-value (dom/by-id "per")) "")
@@ -52,7 +52,7 @@
      :get-center [dbb]
      #(.setView mymap (vector (first %) (last %)) 5))))
 
-(defn addmarkers-toolserver [map-bounds-string]
+(defn- addmarkers-toolserver [map-bounds-string]
   (let [ch (chan)
         markers (L/MarkerClusterGroup.)]
     (set! layers (conj layers markers))
@@ -76,13 +76,13 @@
     (.setView mymap (vector latitude longitude) 15)
     (addmarkers-toolserver (.toBBoxString (.getBounds mymap)))))
 
-(defn maybe-show-here []
+(defn- maybe-show-here []
   (let [z (.getZoom mymap)
         sh (dom/by-id "showhere")]
     (when (>= z zoomlimit)
       (set! (.-innerHTML sh) "->?<-"))
     (when (< z zoomlimit)
-      (set! (.-innerHTML sh) "...."))))
+      (set! (.-innerHTML sh) "..."))))
 
 (.on mymap "zoomend" maybe-show-here)
 
