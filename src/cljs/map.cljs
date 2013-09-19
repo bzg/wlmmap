@@ -10,6 +10,8 @@
 
 (blade/bootstrap)
 
+(def wlm "<a target=\"_blank\" href=\"https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Monuments_upload\">Upload</a> a picture for <a target=\"_blank\" href=\"http://www.wikilovesmonuments.org\">Wiki Loves Monuments</a>!</a>")
+
 (def mymap (-> L .-mapbox (.map "map" "examples.map-9ijuk24y")
                (.setView [45 3.215] 6)))
 
@@ -41,7 +43,7 @@
                    marker (-> L (.marker (L/LatLng. lat lng)
                                          {:icon icon}))]
                (set! (.-value per) (str (Math/round perc) "%"))
-               (.bindPopup marker title)
+               (.bindPopup marker (str title "<br/>" wlm))
                (.addLayer markers marker))))))
     (remote-callback :get-markers [dbb]
                      #(go (doseq [[a cnt] (map list % (range 100000))]
@@ -65,7 +67,7 @@
                         {:marker-symbol ""
                          :marker-color (if img "FF0000" "0044FF")})
                   marker (-> L (.marker (L/LatLng. lat lng) {:icon icon}))]
-              (.bindPopup marker title)
+              (.bindPopup marker (str title "<br/>" wlm))
               marker)
            res)))
     (.addLayer mymap markers)))

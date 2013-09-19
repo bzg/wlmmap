@@ -58,7 +58,9 @@
                  arl (format wp-link-format-url lng (codec/url-encode art) art)
                  src (format src-format-url reg id)
                  all (str "<h3>" nam "</h3>"
-                          (if (empty? imc) "[No image]<br/><br/>" (str ilk "<br/>"))
+                          (if (empty? imc)
+                            (str "[No image]<br/>")
+                            (str ilk "<br/>"))
                           (when (seq art) (str arl "<br/>"))
                           (when (seq reg) src))]
              (list cnt (list (:lat m) (:lon m)) (empty? imc) all))))

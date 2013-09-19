@@ -99,3 +99,4 @@
   "<a href=\"http://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>")
 (def src-format-url
   "Source: <a href=\"%s\" target=\"_blank\">%s</a>")
+(def wlm "<a target=\"_blank\" href=\"https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Monuments_upload\">Upload</a> a picture for <a target=\"_blank\" href=\"http://www.wikilovesmonuments.org\">Wiki Loves Monuments</a>!</a>")
