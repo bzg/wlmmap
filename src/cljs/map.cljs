@@ -10,7 +10,11 @@
 
 (blade/bootstrap)
 
+;; Promote the possibility of uploading a picture to Wikimedia Commons
 (def wlm "<a target=\"_blank\" href=\"https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Monuments_upload\">Upload</a> a picture for <a target=\"_blank\" href=\"http://www.wikilovesmonuments.org\">Wiki Loves Monuments</a>!</a>")
+
+;; Format string for the "Link to here" link in markers' popup 
+(def lth "<a target=\"_blank\" href=\"http://www.panoramap.org/%s/%s/%s/%s\">Permanlink to this position.</a>")
 
 (def mymap (-> L .-mapbox (.map "map" "examples.map-9ijuk24y")
                (.setView [45 3.215] 6)))
@@ -30,7 +34,10 @@
   (set! stopper "go")
   (let [ch (chan)
         markers (L/MarkerClusterGroup.)
-        per (dom/by-id "per")]
+        per (dom/by-id "per")
+        z (.getZoom mymap)
+        lang (last (re-find #"http://[^/]+/(..)/"
+                            (.-location js/window)))]
     (set! layers (conj layers markers))
     (go (while (not= stopper "stop")
           (let [[a cnt perc] (<! ch)]
@@ -43,7 +50,8 @@
                    marker (-> L (.marker (L/LatLng. lat lng)
                                          {:icon icon}))]
                (set! (.-value per) (str (Math/round perc) "%"))
-               (.bindPopup marker (str title "<br/>" wlm))
+               (.bindPopup marker (str title "<br/>" wlm
+                                       "<br/>" (format lth lang lat lng z)))
                (.addLayer markers marker))))))
     (remote-callback :get-markers [dbb]
                      #(go (doseq [[a cnt] (map list % (range 100000))]
@@ -56,7 +64,10 @@
 
 (defn- addmarkers-toolserver [map-bounds-string]
   (let [ch (chan)
-        markers (L/MarkerClusterGroup.)]
+        markers (L/MarkerClusterGroup.)
+        z (.getZoom mymap)
+        lang (last (re-find #"http://[^/]+/(..)/"
+                            (.-location js/window)))]
     (set! layers (conj layers markers))
     (macros/rpc
      (get-markers-toolserver map-bounds-string) [res]
@@ -67,7 +78,8 @@
                         {:marker-symbol ""
                          :marker-color (if img "FF0000" "0044FF")})
                   marker (-> L (.marker (L/LatLng. lat lng) {:icon icon}))]
-              (.bindPopup marker (str title "<br/>" wlm))
+              (.bindPopup marker (str title "<br/>" wlm
+                                      "<br/>" (format lth lang lat lng z)))
               marker)
            res)))
     (.addLayer mymap markers)))
@@ -117,8 +129,16 @@
 (defn- init []
   (let [lang0 (.-language js/navigator)
         loc (.-location js/window)
-        wdb (re-find #"/../([^/]+)#?$" loc)]
-    (cond (not (re-find #"/../([^/]+)?#?$" loc))
+        latlonz (re-find #"http://[^/]+/../([^/#]+)/([^/#]+)/([^/#]+)#?$" loc)
+        lat (when latlonz (second latlonz))
+        lon (when latlonz (nth latlonz 2))
+        zoom (when latlonz (last latlonz))
+        wdb (re-find #"/../([^/#]+)#?$" loc)]
+    (cond latlonz
+          (do (setmap 0)
+              (.setView mymap (vector lat lon) zoom)
+              (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))
+          (not (re-find #"/../([^/#]+)?#?$" loc))
           (do (set! (.-href loc) (str loc (subs lang0 0 2) "/"))
               (setmap 0))
           wdb

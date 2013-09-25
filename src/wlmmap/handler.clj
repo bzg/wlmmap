@@ -81,16 +81,19 @@
   (atom (sort (map #(let [[_ [cntry lng]] %] (str cntry " / " lng)) lang-pairs))))
 
 (defn- db-options-localized [lang]
-  (if (.exists (clojure.java.io/file (str "resources/public/cldr/" lang "/languages.json")))
+  (if (.exists (clojure.java.io/file
+                (str "resources/public/cldr/" lang "/languages.json")))
     (let [languages-json
-          (json/read-str (slurp (str "resources/public/cldr/" lang "/languages.json"))
-                         :key-fn keyword)
+          (json/read-str
+           (slurp (str "resources/public/cldr/" lang "/languages.json"))
+           :key-fn keyword)
           languages
           (get-in languages-json
                   [:main (keyword lang) :localeDisplayNames :languages])
           territories-json
-          (json/read-str (slurp (str "resources/public/cldr/" lang "/territories.json"))
-                         :key-fn keyword)
+          (json/read-str
+           (slurp (str "resources/public/cldr/" lang "/territories.json"))
+           :key-fn keyword)
           countries
           (get-in territories-json
                   [:main (keyword lang) :localeDisplayNames :territories])]
@@ -124,7 +127,7 @@
                                       (format rm lng lng)) (get % 1)) dbl))))]
     (or (f rm1) (f rm2))))
 
-(defn- index [lang & db]
+(defn- index [lang]
   (let [lng (or lang "en")
         dbl (db-options-localized lng)]
     (h/html5
@@ -160,8 +163,7 @@
        (h/include-js "/js/tt.js")]
       [:div {:id "bottom-right"} "Panoramap.org -- "
        (e/link-to "http://bzg.fr" "bzg.fr")]
-      (h/include-js "/js/main.js")
-      ])))
+      (h/include-js "/js/main.js")])))
 
 (defn- backend
   "interface to select which lang/country to store"
@@ -319,10 +321,11 @@
 
 (defroutes app-routes
   (GET "/" [] (index nil))
+  (GET "/:lang/:lat/:lon/:zoom" [lang] (index lang))
   (GET "/:lang/links" [lang] (links lang))
   (GET "/:lang/about" [lang]  (about lang))
   (GET "/:lang/" [lang] (index lang))
-  (GET "/:lang/:db" [lang db] (index lang db))
+  (GET "/:lang/:db" [lang db] (index lang))
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   (POST "/backend" {params :params} (backend params))
   (POST "/process" {params :params} (process params))

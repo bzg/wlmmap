@@ -1,7 +1,8 @@
-* WAIT Use addLayers instead of addLayer
 * WAIT Merge useless doublons from gb-/en etc.
 * WAIT Filter by with-image (use mapbox add-on for this)
+* TODO Allow /[lang]/[latitude]/[longitude] URLs and "permalink" in popups
 * TODO Add mapbox minimap
+* TODO Add login and add-to-list links
 * Archive							 :ARCHIVE:
 ** DONE Test getting results directly from toolserver
    :PROPERTIES:
@@ -112,4 +113,8 @@ http://toolserver.org/~erfgoed/api/api.php?action=search&srcountry=fr&srlang=fr&
 ** CANCELED Fix localization: don't use a state
    :PROPERTIES:
    :ARCHIVE_TIME: 2013-09-10 mar. 17:45
+   :END:
+** DONE Use addLayers instead of addLayer
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2013-09-25 mer. 17:32
    :END:
