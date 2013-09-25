@@ -14,7 +14,7 @@
 (def wlm "<a target=\"_blank\" href=\"https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Monuments_upload\">Upload</a> a picture for <a target=\"_blank\" href=\"http://www.wikilovesmonuments.org\">Wiki Loves Monuments</a>!</a>")
 
 ;; Format string for the "Link to here" link in markers' popup 
-(def lth "<a target=\"_blank\" href=\"http://www.panoramap.org/%s/%s/%s/%s\">Permanlink to this position.</a>")
+(def lth "<a target=\"_blank\" href=\"http://www.panoramap.org/%s/%s/%s/%s\">Permalink to this position.</a>")
 
 (def mymap (-> L .-mapbox (.map "map" "examples.map-9ijuk24y")
                (.setView [45 3.215] 6)))
