@@ -160,6 +160,8 @@
                   (tower/t (keyword lng) trad :main/links))
        (e/link-to {:id "about"} (str "/" lng "/about")
                   (tower/t (keyword lng) trad :main/about))
+       (e/link-to {:id "roadmap"} (str "/" lng "/roadmap")
+                  (tower/t (keyword lng) trad :main/roadmap))
        (h/include-js "/js/tt.js")]
       [:div {:id "bottom-right"} "Panoramap.org -- "
        (e/link-to "http://bzg.fr" "bzg.fr")]
@@ -278,6 +280,30 @@
               [:li (e/link-to (str "http://www.panoramap.org/" lang "/"
                                    (clojure.string/replace raw #"/" "")) name)]))]]))
 
+(defn- roadmap [lang]
+  (h/html5
+   [:head
+    [:title (str "Panoramap - " (tower/t (keyword lang) trad :main/roadmap))]
+    (h/include-css "/css/about.css")
+    (h/include-js "/js/gg.js")]
+   [:body
+    [:h1 (tower/t (keyword lang) trad :main/roadmap)]
+    [:h2 "wlmmap v0.0.9"]
+    [:ul
+     [:li "Allow users to create lists when logged in"]]
+    [:h2 "wlmmap v0.0.8"]
+    [:ul
+     [:li (str "Add missing countries (")
+      (e/link-to "mailto:bzg@bzg.fr" "please send me an email")
+      ")"]
+     [:li "Merge entries from the same countries (e.g. for DE)"]
+     [:li "Implement basic login"]
+     [:li "Enhance backend to make it easier to sync"]
+     ]
+    [:h2 "wlmmap v0.0.7 (Current)"]
+    [:ul
+     [:li "Display WLM monuments on a map"]]]))
+
 (defn- about [lang & msg]
   (h/html5
    [:head
@@ -324,6 +350,7 @@
   (GET "/:lang/:lat/:lon/:zoom" [lang] (index lang))
   (GET "/:lang/links" [lang] (links lang))
   (GET "/:lang/about" [lang]  (about lang))
+  (GET "/:lang/roadmap" [lang]  (roadmap lang))
   (GET "/:lang/" [lang] (index lang))
   (GET "/:lang/:db" [lang db] (index lang))
   (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))

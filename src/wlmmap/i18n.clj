@@ -8,6 +8,7 @@
                 :stop "Stop"
                 :here "Here"
                 :about "About"
+                :roadmap "Roadmap"
                 :links "Links"
                 :showhere "Show monuments around (Alt-?)"
                 }
@@ -26,6 +27,7 @@
                 :stop "Stop"
                 :here "Ici"
                 :about "À propos"
+                :roadmap "À venir"
                 :links "Liens"
                 :showhere "Afficher les monuments autour (Alt-?)"}
          :links {:intro "Ces liens directs affichent immédiatement les monuments sur la carte."}
