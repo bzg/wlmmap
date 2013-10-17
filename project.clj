@@ -1,10 +1,11 @@
 (defproject
-  wlmmap "0.0.7"
+  wlmmap "0.0.8"
   :url "http://github.com/bzg/wlmmap"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :repositories {"sonatype-oss-public"
                  "https://oss.sonatype.org/content/groups/public/"}
+  :immutant {:context-path "/"}
   :dependencies
   [[org.clojure/clojure "1.5.1"]
    [org.clojure/clojurescript "0.0-1859"]
@@ -22,17 +23,7 @@
    [shoreleave/shoreleave-remote "0.3.0"]
    [domina "1.0.2-SNAPSHOT"]
    [com.taoensso/tower "2.0.0-beta5"]]
-  :ring
-  {:handler wlmmap.handler/war-handler,
-   :init wlmmap.handler/init,
-   :destroy wlmmap.handler/destroy}
-  :profiles
-  {:production
-   {:ring
-    {:open-browser? false, :stacktraces? false, :auto-reload? false}},
-   :dev
-   {:dependencies [[ring-mock "0.1.5"] [ring "1.2.0"]]}}
-  :url "http://wlmmap.herokuapp.com"
+  :url "http://panoramap.org"
   :plugins
   [[lein-cljsbuild "0.3.2"]
    [lein-ring "0.8.5"]]

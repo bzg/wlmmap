@@ -36,7 +36,7 @@
       (clojure.string/replace #"\[\[|\]\]|[\n\r]+|\{\{[^}]+\}\}" "")))
 
 (def server1-conn
-  {:pool {} :spec {:uri (System/getenv "OPENREDIS_URL")}})
+  {:pool {} :spec {:uri "redis://localhost:6379/"}})
 
 (defmacro wcar* [& body]
   `(car/wcar server1-conn ~@body))
@@ -364,4 +364,4 @@
 (def app (middleware/app-handler
           [(wrap-friend (wrap-rpc app-routes))]))
 
-(def war-handler (middleware/war-handler app))
+(def ring-handler (middleware/war-handler app))
