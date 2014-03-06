@@ -10,6 +10,7 @@
             [ring.util.codec :as codec]
             [ring.util.response :as resp]
             [noir.util.middleware :as middleware]
+            [org.httpkit.server :refer :all]
             [compojure.core :as compojure :refer (GET POST defroutes)]
             (compojure [handler :as handler]
                        [route :as route])
@@ -365,3 +366,7 @@
           [(wrap-friend (wrap-rpc app-routes))]))
 
 (def ring-handler (middleware/war-handler app))
+
+(defn -main [& args]
+  (run-server #'ring-handler {:port 8080}))
+
