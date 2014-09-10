@@ -1,6 +1,5 @@
 (defproject
-  wlmmap "0.0.9"
-  :url "http://github.com/bzg/wlmmap"
+  wlmmap "0.1.0"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :repositories {"sonatype-oss-public"
