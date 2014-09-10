@@ -22,7 +22,6 @@
    [shoreleave/shoreleave-remote "0.3.0"]
    [domina "1.0.2-SNAPSHOT"]
    [com.taoensso/tower "2.0.0-beta5"]]
-  :url "http://panoramap.org"
   :plugins
   [[lein-cljsbuild "0.3.2"]
    [lein-ring "0.8.5"]]
