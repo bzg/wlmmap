@@ -368,5 +368,5 @@
 (def ring-handler (middleware/war-handler app))
 
 (defn -main [& args]
-  (let [port (Integer/parseInt (System/getenv "PORT"))]
+  (let [port (Integer/parseInt (get (System/getenv) "PORT" "8080"))]
     (run-server #'ring-handler {:port port})))

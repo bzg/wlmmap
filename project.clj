@@ -1,5 +1,6 @@
 (defproject
-  wlmmap "0.0.7"
+  wlmmap "0.1.0"
+  :url "http://github.com/bzg/wlmmap"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :repositories {"sonatype-oss-public"
@@ -21,7 +22,6 @@
    [shoreleave/shoreleave-remote "0.3.0"]
    [domina "1.0.2-SNAPSHOT"]
    [com.taoensso/tower "2.0.0-beta5"]]
-  :url "http://panoramap.org"
   :plugins
   [[lein-cljsbuild "0.3.2"]
    [lein-ring "0.8.5"]]
