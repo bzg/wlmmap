@@ -30,37 +30,37 @@
         (set! (.-value (dom/by-id "per")) "")
         (set! layers (butlast layers)))))
 
-(defn- addmarkers [dbb]
-  (set! stopper "go")
-  (let [ch (chan)
-        markers (L/MarkerClusterGroup.)
-        per (dom/by-id "per")
-        z (.getZoom mymap)
-        lang (last (re-find #"http://[^/]+/(..)/"
-                            (.-location js/window)))]
-    (set! layers (conj layers markers))
-    (go (while (not= stopper "stop")
-          (let [[a cnt perc] (<! ch)]
-            (macros/rpc
-             (get-marker dbb a) [p]
-             (let [[[lat lng] img title] p
-                   icon ((get-in L [:mapbox :marker :icon])
-                         {:marker-symbol ""
-                          :marker-color (if img "FF0000" "0044FF")})
-                   marker (-> L (.marker (L/LatLng. lat lng)
-                                         {:icon icon}))]
-               (set! (.-value per) (str (Math/round perc) "%"))
-               (.bindPopup marker (str title "<br/>" wlm
-                                       "<br/>" (format lth lang lat lng z)))
-               (.addLayer markers marker))))))
-    (remote-callback :get-markers [dbb]
-                     #(go (doseq [[a cnt] (map list % (range 100000))]
-                            (<! (timeout 20))
-                            (>! ch [a cnt (/ (* cnt 100) (count %))]))))
-    (.addLayer mymap markers)
-    (remote-callback
-     :get-center [dbb]
-     #(.setView mymap (vector (first %) (last %)) 5))))
+;; (defn- addmarkers [dbb]
+;;   (set! stopper "go")
+;;   (let [ch (chan)
+;;         markers (L/MarkerClusterGroup.)
+;;         per (dom/by-id "per")
+;;         z (.getZoom mymap)
+;;         lang (last (re-find #"http://[^/]+/(..)/"
+;;                             (.-location js/window)))]
+;;     (set! layers (conj layers markers))
+;;     (go (while (not= stopper "stop")
+;;           (let [[a cnt perc] (<! ch)]
+;;             (macros/rpc
+;;              (get-marker dbb a) [p]
+;;              (let [[[lat lng] img title] p
+;;                    icon ((get-in L [:mapbox :marker :icon])
+;;                          {:marker-symbol ""
+;;                           :marker-color (if img "FF0000" "0044FF")})
+;;                    marker (-> L (.marker (L/LatLng. lat lng)
+;;                                          {:icon icon}))]
+;;                (set! (.-value per) (str (Math/round perc) "%"))
+;;                (.bindPopup marker (str title "<br/>" wlm
+;;                                        "<br/>" (format lth lang lat lng z)))
+;;                (.addLayer markers marker))))))
+;;     (remote-callback :get-markers [dbb]
+;;                      #(go (doseq [[a cnt] (map list % (range 100000))]
+;;                             (<! (timeout 20))
+;;                             (>! ch [a cnt (/ (* cnt 100) (count %))]))))
+;;     (.addLayer mymap markers)
+;;     (remote-callback
+;;      :get-center [dbb]
+;;      #(.setView mymap (vector (first %) (last %)) 5))))
 
 (defn- addmarkers-toolserver [map-bounds-string]
   (let [ch (chan)
@@ -102,16 +102,16 @@
 
 (defn- setmap [local]
   (let [db (dom/by-id "db")
-        show (dom/by-id "sm")
+        ;; show (dom/by-id "sm")
         stop (dom/by-id "stop")
         per (dom/by-id "per")
         sh (dom/by-id "showhere")]
     (when (= local 1)
       (.getCurrentPosition (.-geolocation js/navigator) geolocalize))
-    (set! (.-onclick show)
-          #(do (set! stopper "stop")
-               (when (seq layers) (removelastlayer))
-               (addmarkers (clojure.string/replace (.-value db) #" ?/ ?" ""))))
+    ;; (set! (.-onclick show)
+    ;;       #(do (set! stopper "stop")
+    ;;            (when (seq layers) (removelastlayer))
+    ;;            (addmarkers (clojure.string/replace (.-value db) #" ?/ ?" ""))))
     (set! (.-onclick stop) #(set! stopper "stop"))
     (set! (.-onclick sh)
           #(let [z (.getZoom mymap)]
@@ -141,8 +141,7 @@
           (not (re-find #"/../([^/#]+)?#?$" loc))
           (do (set! (.-href loc) (str loc (subs lang0 0 2) "/"))
               (setmap 0))
-          wdb
-          (do (setmap 0) (addmarkers (second wdb)))
+          ;; wdb (do (setmap 0) (addmarkers (second wdb)))
           :else (setmap 1))))
 
 (set! (.-onload js/window) init)

@@ -15,7 +15,7 @@
    [net.drib/blade "0.1.0"]
    [compojure "1.1.5"]
    [http-kit "2.1.17"]
-   [com.taoensso/carmine "2.2.0"]
+   ;; [com.taoensso/carmine "2.2.0"]
    [org.clojure/data.json "0.2.2"]
    [ring-server "0.2.8"]
    [shoreleave/shoreleave-remote-ring "0.3.0"]
