@@ -1,5 +1,5 @@
-(ns wlmmap.vars
-  (:require [cemerick.friend.credentials :refer (hash-bcrypt)]))
+(ns wlmmap.vars)
+;;  (:require [cemerick.friend.credentials :refer (hash-bcrypt)]))
 
 ;; (def admin
 ;;   (atom {"bzg" {:username "bzg"

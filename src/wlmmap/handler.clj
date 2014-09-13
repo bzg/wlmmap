@@ -1,15 +1,16 @@
 (ns wlmmap.handler
   (:require [clojure.data.json :as json]
             [clojure.string :as str]
-            [cemerick.friend :as friend]
-            (cemerick.friend [workflows :as workflows]
-                             [credentials :as creds])
+            ;; [cemerick.friend :as friend]
+            ;; (cemerick.friend [workflows :as workflows]
+            ;;                  [credentials :as creds])
             ;; [taoensso.carmine :as car]
             [wlmmap.vars :refer :all]
             [wlmmap.i18n :refer :all]
             [ring.util.codec :as codec]
             [ring.util.response :as resp]
             [noir.util.middleware :as middleware]
+            [ring.middleware.reload :refer :all]
             [org.httpkit.server :refer :all]
             [compojure.core :as compojure :refer (GET POST defroutes)]
             (compojure [handler :as handler]
@@ -347,25 +348,24 @@
         [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]]]))
 
 (defroutes app-routes
-  (GET "/" [] (index nil))
+  (GET "/" [] (index "en"))
+
   (GET "/:lang/:lat/:lon/:zoom" [lang] (index lang))
   (GET "/:lang/links" [lang] (links lang))
   (GET "/:lang/about" [lang]  (about lang))
-  (GET "/:lang/roadmap" [lang]  (roadmap lang))
   (GET "/:lang/" [lang] (index lang))
-  (GET "/:lang/:db" [lang db] (index lang))
+  (GET "/:lang/roadmap" [lang] (roadmap lang))
+  ;; (GET "/:lang/:db" [lang db] (index lang))
   ;; (GET "/backend" req (if-let [identity (friend/identity req)] (backend req) "Doh!"))
   ;; (POST "/backend" {params :params} (backend params))
   ;; (POST "/process" {params :params} (process params))
   ;; (GET "/login" [] (login-form))
   ;; (GET "/logout" req (friend/logout* (resp/redirect (str (:context req) "/"))))
+  
   (route/resources "/")
   (route/not-found (about "en" "Sorry, the page you're looking for could not be found.")))
 
-(def app (middleware/app-handler
-          [(wrap-rpc app-routes)]))
-
-(def ring-handler (middleware/war-handler app))
+(def app (wrap-reload (middleware/app-handler [(wrap-rpc app-routes)])))
 
 (defn -main [& args]
-  (run-server #'ring-handler {:port 8888}))
+  (run-server #'app {:port 8888}))
