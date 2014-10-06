@@ -1,7 +1,6 @@
-
 #+HTML: <a href="http://travis-ci.org/bzg/wlmmap"><img src="https://api.travis-ci.org/bzg/wlmmap.png"/></a>
 
-[![Gittip](http://img.shields.io/gittip/bzg.svg)](https://www.gittip.com/bzg/)
+[[https://www.gittip.com/bzg/][http://img.shields.io/gittip/bzg.svg]]
 
 * What is Wlmmap ?
 
