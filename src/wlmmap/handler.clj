@@ -22,16 +22,6 @@
             [taoensso.tower :as tower
              :refer (with-locale with-tscope t *locale*)]))
 
-(defn init
-  "Called when the application starts."
-  []
-  (str "init"))
-
-(defn destroy
-  "Called when the application shuts down."
-  []
-  (str "Destroy"))
-
 (defn- cleanup-name [n]
   (-> n
       (clojure.string/replace #"\[\[([^]]+)\|[^]]+\]\]" "$1")
