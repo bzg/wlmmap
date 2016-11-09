@@ -1,10 +1,4 @@
 (ns wlmmap.vars)
-;;  (:require [cemerick.friend.credentials :refer (hash-bcrypt)]))
-
-;; (def admin
-;;   (atom {"bzg" {:username "bzg"
-;;                 :password (hash-bcrypt (System/getenv "wlmmapbackendpwd"))
-;;                 :roles #{::user}}}))
 
 (def lang-pairs
   {
@@ -86,11 +80,9 @@
    })
 
 (def toolserver-url
-  ;; "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
-  "http://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
+  "https://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
 (def toolserver-bbox-format-url
-  "http://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
-;;  "http://toolserver.org/~erfgoed/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
+  "https://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
 (def wm-thumbnail-format-url
   "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%%3AFilePath&file=%s&width=250\" />")
 (def wm-img-format-url
