@@ -1,13 +1,10 @@
-#+HTML: <a href="http://travis-ci.org/bzg/wlmmap"><img src="https://api.travis-ci.org/bzg/wlmmap.png"/></a>
-
-[[https://www.gittip.com/bzg/][http://img.shields.io/gittip/bzg.svg]]
 
 * What is Wlmmap ?
 
 Wlmmap is the web application behind http://www.panoramap.org
 
-All the data displayed on http://www.panoramap.org come from the
-Wikimedia Commons database and are released under a free license.
+Data displayed on http://www.panoramap.org come from the Wikimedia
+Commons database and are released under a free license.
 
 * Core features
 
@@ -21,7 +18,7 @@ France in catalan: pick up the one you want from the menu, then click
 "Show".
 
 This will load data in a local copy of of the [[https://commons.wikimedia.org/wiki/Commons:Monuments_database][Wikimedia Commons
-monuments database]], maintained by [[http://en.wikipedia.org/wiki/User:Multichill][multichill]].
+monuments database]].
 
 If you click on "Here", this will request the monuments database
 directly, not the local copy, and display the results on the map.
@@ -51,12 +48,13 @@ This (hopefully) leaves the UI reactive.
 
 * Support
 
-You can help by proposing patches for
+You can help by proposing patches for the localization.
 
-- the localization;
+You can also make a donation:
 
-- using =addLayers= instead of =addLayer= to bulk add markers to the
-  markercluster (see https://github.com/Leaflet/Leaflet.markercluster)
+- https://liberapay.com/bzg/
+- https://gratipay.com/~bzg/
+- https://www.paypal.me/bzg
 
 Thanks!
 
