@@ -14,7 +14,7 @@
 (def wlm "<a target=\"_blank\" href=\"https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Monuments_upload\">Upload</a> a picture for <a target=\"_blank\" href=\"http://www.wikilovesmonuments.org\">Wiki Loves Monuments</a>!</a>")
 
 ;; Format string for the "Link to here" link in markers' popup 
-(def lth "<a target=\"_blank\" href=\"http://www.panoramap.org/%s/%s/%s/%s\">Permalink to this position.</a>")
+(def lth "<a target=\"_blank\" href=\"https://www.panoramap.org/%s/%s/%s/%s\">Permalink to this position.</a>")
 
 (def mymap (-> L .-mapbox (.map "map" "bzg.i8bb9pdk")
                (.setView [45 3.215] 6)))
@@ -34,7 +34,7 @@
   (let [ch (chan)
         markers (L/MarkerClusterGroup.)
         z (.getZoom mymap)
-        lang (last (re-find #"http://[^/]+/(..)/"
+        lang (last (re-find #"https://[^/]+/(..)/"
                             (.-location js/window)))]
     (set! layers (conj layers markers))
     (macros/rpc
@@ -95,7 +95,7 @@
 (defn- init []
   (let [lang0 (.-language js/navigator)
         loc (.-location js/window)
-        latlonz (re-find #"http://[^/]+/../([^/#]+)/([^/#]+)/([^/#]+)#?$" loc)
+        latlonz (re-find #"https://[^/]+/../([^/#]+)/([^/#]+)/([^/#]+)#?$" loc)
         lat (when latlonz (second latlonz))
         lon (when latlonz (nth latlonz 2))
         zoom (when latlonz (last latlonz))

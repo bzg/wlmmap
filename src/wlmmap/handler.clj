@@ -137,7 +137,7 @@
                   (tower/t (keyword lng) trad :main/roadmap))
        (h/include-js "/js/tt.js")]
       [:div {:id "bottom-right"} "Panoramap.org -- "
-       (e/link-to "http://bzg.fr" "bzg.fr")]
+       (e/link-to "https://bzg.fr" "bzg.fr")]
       (h/include-js "/js/main.js")])))
 
 (defn- links [lang]
@@ -150,7 +150,7 @@
     [:p (tower/t (keyword lang) trad :links/intro)]
     [:ul
      (doall (for [[name raw] (db-options-localized lang)]
-              [:li (e/link-to (str "http://www.panoramap.org/" lang "/"
+              [:li (e/link-to (str "https://www.panoramap.org/" lang "/"
                                    (clojure.string/replace raw #"/" "")) name)]))]]))
 
 (defn- roadmap [lang]
@@ -188,7 +188,7 @@
     [:h1 (tower/t (keyword lang) trad :about/a)]
     [:p (tower/t (keyword lang) trad :about/b)
      (e/link-to {:target "_blank"}
-                "http://www.wikilovesmonuments.org/"
+                "http://www.wikilovesmonuments.org"
                 "Wiki Loves Monuments 2013") "."]
     [:p (tower/t (keyword lang) trad :about/c)]
     [:p (tower/t (keyword lang) trad :about/d)]
@@ -203,7 +203,7 @@
     [:p (tower/t (keyword lang) trad :about/i)
      (e/link-to "mailto:bzg@bzg.fr?subject=[panoramap]"
                 (tower/t (keyword lang) trad :about/j))]
-    [:p "-- " (e/link-to {:target "_blank"} "http://bzg.fr" "bzg")]]))
+    [:p "-- " (e/link-to {:target "_blank"} "https://bzg.fr" "bzg")]]))
 
 (defn- login-form []
   (h/html5
