@@ -74,8 +74,10 @@
         stop (dom/by-id "stop")
         per (dom/by-id "per")
         sh (dom/by-id "showhere")]
-    (when (= local 1)
-      (.getCurrentPosition (.-geolocation js/navigator) geolocalize))
+    ;; FIXME: first switch to https for panoramap.org
+    ;; http://stackoverflow.com/questions/32106849/getcurrentposition-and-watchposition-are-deprecated-on-insecure-origins
+    ;; (when (= local 1)
+    ;;   (.getCurrentPosition (.-geolocation js/navigator) geolocalize))
     (set! (.-onclick stop) #(set! stopper "stop"))
     (set! (.-onclick sh)
           #(let [z (.getZoom mymap)]
