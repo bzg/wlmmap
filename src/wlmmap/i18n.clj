@@ -4,15 +4,10 @@
   {:dev-mode? true
    :fallback-locale :en
    :dictionary
-   {:en {:main {:show "Go"
-                :stop "Stop"
-                :here "Here"
-                :about "About"
+   {:en {:main {:about "About"
                 :roadmap "Roadmap"
-                :links "Links"
                 :showhere "Show monuments around (Alt-?)"
                 }
-         :links {:intro "These links auto-display the monuments on the map."}
          :about {:a "About"
                  :b "This map has been developed during "
                  :c "It allows you to explore cultural heritage treasures of the world."
@@ -23,14 +18,9 @@
                  :h "The code behind this website is available from "
                  :i "I appreciate feedback and suggestions! "
                  :j "Drop me an email"}}
-    :fr {:main {:show "Afficher"
-                :stop "Stop"
-                :here "Ici"
-                :about "À propos"
+    :fr {:main {:about "À propos"
                 :roadmap "À venir"
-                :links "Liens"
                 :showhere "Afficher les monuments autour (Alt-?)"}
-         :links {:intro "Ces liens directs affichent immédiatement les monuments sur la carte."}
          :about {:a "À propos"
                  :b "Cette carte a été développée pour "
                  :c "Elle permet d'explorer les monuments historiques du monde entier."
@@ -41,12 +31,9 @@
                  :h "Le code derrière ce site web est disponible depuis "
                  :i "J'apprécie les remarques, critiques et suggestions! "
                  :j "Envoyez-moi un e-mail"}}
-    :it {:main {:show "Mostra"
-                :stop "Stop"
-                :here "Qui"
-                :about "About"
-                :links "Links"}
-         :links {:intro "Questi links mostrano i monumenti sulla mappa."}
+    :it {:main {:roadmap "Roadmap"
+                :showhere "Show monuments around (Alt-?)"
+                :about "About"}
          :about {:a "About"
                  :b "Questa mappa è stata sviluppata durante "
                  :c "Ti permette di esplorare i tesori del patrimonio culturale di tutto il mondo."

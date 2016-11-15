@@ -16,10 +16,8 @@
 ;; Format string for the "Link to here" link in markers' popup 
 (def lth "<a target=\"_blank\" href=\"https://www.panoramap.org/%s/%s/%s/%s\">Permalink to this position.</a>")
 
-(def mymap (-> L .-mapbox (.map "map" "bzg.i8bb9pdk")
-               (.setView [45 3.215] 6)))
+(def mymap (-> js/L .-mapbox (.map "map" "bzg.i8bb9pdk") (.setView [45 3.215] 6)))
 
-(def stopper "stop")
 (def lang (.-language js/navigator))
 (def zoomlimit 10)
 (def layers '())
@@ -62,7 +60,7 @@
   (let [z (.getZoom mymap)
         sh (dom/by-id "showhere")]
     (when (>= z zoomlimit)
-      (set! (.-innerHTML sh) "->?<-"))
+      (set! (.-innerHTML sh) "Show!"))
     (when (< z zoomlimit)
       (set! (.-innerHTML sh) "..."))))
 
@@ -70,15 +68,10 @@
 
 (defn- setmap [local]
   (let [db (dom/by-id "db")
-        ;; show (dom/by-id "sm")
-        stop (dom/by-id "stop")
         per (dom/by-id "per")
-        sh (dom/by-id "showhere")]
-    ;; FIXME: first switch to https for panoramap.org
-    ;; http://stackoverflow.com/questions/32106849/getcurrentposition-and-watchposition-are-deprecated-on-insecure-origins
+        sh (or (dom/by-id "showhere") "")]
     (when (= local 1)
       (.getCurrentPosition (.-geolocation js/navigator) geolocalize))
-    (set! (.-onclick stop) #(set! stopper "stop"))
     (set! (.-onclick sh)
           #(let [z (.getZoom mymap)]
              (when (or (>= z zoomlimit)
@@ -88,7 +81,6 @@
                                   "It takes a while if the focus is too large.\n\n"
                                   "Zoom " (- zoomlimit z)
                                   " times to be more comfortable."))))
-               (set! stopper "stop")
                (when (seq layers) (removelastlayer))
                (addmarkers-toolserver (.toBBoxString (.getBounds mymap))))))))
 

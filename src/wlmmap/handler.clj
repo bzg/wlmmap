@@ -123,59 +123,15 @@
       (h/include-js "/js/leaflet.markercluster.js")
       "<div id=\"map\"></div>"
       [:div {:id "top-left"}
-       [:form [:select {:id "db"} (f/select-options dbl (get-selected-db dbl lng))]]
-       (e/link-to {:id "sm"} "#" (tower/t (keyword lng) trad :main/show))
-       (e/link-to {:id "stop" :accesskey "!"} "#" (tower/t (keyword lng) trad :main/stop))
        (e/link-to {:id "showhere" :accesskey "?" :title (tower/t (keyword lng) trad :main/showhere)} "#" "...")
        (f/text-field {:id "per" :size 12} "per")]
       [:div {:id "top-right"}
-       (e/link-to {:id "links"} (str "/" lng "/links")
-                  (tower/t (keyword lng) trad :main/links))
        (e/link-to {:id "about"} (str "/" lng "/about")
                   (tower/t (keyword lng) trad :main/about))
-       (e/link-to {:id "roadmap"} (str "/" lng "/roadmap")
-                  (tower/t (keyword lng) trad :main/roadmap))
        (h/include-js "/js/tt.js")]
       [:div {:id "bottom-right"} "Panoramap.org -- "
        (e/link-to "https://bzg.fr" "bzg.fr")]
       (h/include-js "/js/main.js")])))
-
-(defn- links [lang]
-  (h/html5
-   [:head
-    [:title "Panoramap - explore cultural heritage"]
-    (h/include-css "/css/about.css")
-    (h/include-js "/js/gg.js")]
-   [:body
-    [:p (tower/t (keyword lang) trad :links/intro)]
-    [:ul
-     (doall (for [[name raw] (db-options-localized lang)]
-              [:li (e/link-to (str "https://www.panoramap.org/" lang "/"
-                                   (clojure.string/replace raw #"/" "")) name)]))]]))
-
-(defn- roadmap [lang]
-  (h/html5
-   [:head
-    [:title (str "Panoramap - " (tower/t (keyword lang) trad :main/roadmap))]
-    (h/include-css "/css/about.css")
-    (h/include-js "/js/gg.js")]
-   [:body
-    [:h1 (tower/t (keyword lang) trad :main/roadmap)]
-    [:h2 "wlmmap v0.0.9"]
-    [:ul
-     [:li "Allow users to create lists when logged in"]]
-    [:h2 "wlmmap v0.0.8"]
-    [:ul
-     [:li (str "Add missing countries (")
-      (e/link-to "mailto:bzg@bzg.fr" "please send me an email")
-      ")"]
-     [:li "Merge entries from the same countries (e.g. for DE)"]
-     [:li "Implement basic login"]
-     [:li "Enhance backend to make it easier to sync"]
-     ]
-    [:h2 "wlmmap v0.0.7 (Current)"]
-    [:ul
-     [:li "Display WLM monuments on a map"]]]))
 
 (defn- about [lang & msg]
   (h/html5
@@ -205,26 +161,11 @@
                 (tower/t (keyword lang) trad :about/j))]
     [:p "-- " (e/link-to {:target "_blank"} "https://bzg.fr" "bzg")]]))
 
-(defn- login-form []
-  (h/html5
-   [:head (h/include-css "/css/admin.css")]
-   [:body
-    [:div {:class "row"}
-     [:div {:class "columns small-12"}
-      [:h1 "Admin login"]
-      [:div {:class "row"}
-       [:form {:method "POST" :action "login"}
-        [:div "Username: " [:input {:type "text" :name "username"}]]
-        [:div "Password: " [:input {:type "password" :name "password"}]]
-        [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]]]))
-
 (defroutes app-routes
   (GET "/" [] (index "en"))
   (GET "/:lang/:lat/:lon/:zoom" [lang] (index lang))
-  (GET "/:lang/links" [lang] (links lang))
   (GET "/:lang/about" [lang]  (about lang))
   (GET "/:lang/" [lang] (index lang))
-  (GET "/:lang/roadmap" [lang] (roadmap lang))
   (route/resources "/")
   (route/not-found (about "en" "Sorry, the page you're looking for could not be found.")))
 
