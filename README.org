@@ -1,3 +1,4 @@
+#+html: <img src="https://circleci.com/gh/bzg/wlmmap/tree/master.svg?style=svg" />
 
 * What is Wlmmap ?
 
