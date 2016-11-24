@@ -81,14 +81,20 @@
 
 (def toolserver-url
   "https://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article")
+
 (def toolserver-bbox-format-url
   "https://tools.wmflabs.org/heritage/api/api.php?action=search&format=json&limit=5000&props=lat|lon|name|registrant_url|id|image|lang|monument_article&bbox=%s")
+
 (def wm-thumbnail-format-url
   "<img src=\"https://commons.wikimedia.org/w/index.php?title=Special%%3AFilePath&file=%s&width=250\" />")
+
 (def wm-img-format-url
   "<a href=\"https://commons.wikimedia.org/wiki/File:%s\" target=\"_blank\">%s</a>")
+
 (def wp-link-format-url
   "<a href=\"https://%s.wikipedia.org/wiki/%s\" target=\"_blank\">%s</a>")
+
 (def src-format-url
   "Source: <a href=\"%s\" target=\"_blank\">%s</a>")
+
 (def wlm "<a target=\"_blank\" href=\"https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Monuments_upload\">Upload</a> a picture for <a target=\"_blank\" href=\"http://www.wikilovesmonuments.org\">Wiki Loves Monuments</a>!</a>")
